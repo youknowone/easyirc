@@ -1,49 +1,16 @@
 
 #-*- coding: utf-8 -*-
-
+from __future__ import absolute_import
 import socket
+
+from . import util
 
 
 CREATED = 'CREATED'
 CONNECTED = 'CONNECTED'
 
 
-class IRCLine(list):
-    def __init__(self, iterable=[]):
-        list.__init__(self, iterable)
-        self.header = None
-
-
-def split_line(line):
-    """General IRC line decoder"""
-    def decolon(item):
-        """Colon has special usage in IRC protocol"""
-        if item[0] == ':':
-            return item[1:]
-        return item
-
-    items = IRCLine()
-
-    #Remove the line header, if exists
-    if line[0] == ':':
-        item, line = line.split(' ', 1)
-        items.header = decolon(item)
-
-    while ' ' in line:
-        # Colon-headed item means it is long argument
-        if line[0] == ':':
-            break
-        item, line = line.split(' ', 1)
-        # Skip zero-lengthed item - split is not good enough for this case
-        if len(item) == 0:
-            continue
-        items.append(decolon(item))
-    # Attach the last item
-    items.append(decolon(line))
-    return items
-
-
-class IRCSocket(object):
+class Socket(object):
     def __init__(self, addr, charset='utf-8'):
         """addr is a tuple represents (host, port)"""
         self.addr = addr
@@ -142,10 +109,10 @@ class IRCSocket(object):
         msg = self.dispatch()
         if msg is None:
             return None
-        return split_line(msg)
+        return util.split(msg)
 
     def dispatch_all_cmd(self):
         """Actually, not a socket-level but for easy-debug."""
         for msg in self.dispatch_all():
-            yield split_line(msg)
+            yield util.split(msg)
 

@@ -2,12 +2,13 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-import ircsocket
+from microirc import util
+from microirc.socket import Socket
 
 import settings
 
 
-class MockSocket(ircsocket.IRCSocket):
+class MockSocket(Socket):
     def create_socket(self):
         self.socket = MockServerSocket()
         self.queue = ['CREATED'] # EVERYTHING-IS-RESPONSE!
@@ -52,22 +53,22 @@ class MockServerSocket(object):
     ['PRIVMSG #chan nick :this is the msg', ['PRIVMSG', '#chan', 'nick', 'this is the msg']],
 ])
 def test_split(line, items):
-    splited = ircsocket.split_line(line)
+    splited = util.split(line)
     assert splited == items
 
 socktypes = [[MockSocket]]
 if settings.TEST_REALSERVER:
-    socktypes.append([ircsocket.IRCSocket])
+    socktypes.append([Socket])
 
 @pytest.mark.parametrize(['SocketType'], [
-    [ircsocket.IRCSocket],
+    [Socket],
     [MockSocket],
 ])
 def test_create(SocketType):
     connop = settings.CONNECTIONS[0]
     sock = SocketType((connop['host'], connop['port']), 'utf-8')
     msg = sock.dispatch()
-    assert msg == ircsocket.CREATED
+    assert msg == 'CREATED'
     assert sock.dispatch() is None
     return sock
 
@@ -79,7 +80,7 @@ def test_enqueue(SocketType):
     sock.connect()
     for msg in sock.dispatch_all():
         print msg
-        assert msg == ircsocket.CONNECTED
+        assert msg == 'CONNECTED'
     assert sock.dispatch() is None
 
     def dispatch_useful():
@@ -130,5 +131,5 @@ def test_enqueue(SocketType):
     assert msg[0] == 'PART'
 
 if __name__ == '__main__':
-    test_enqueue(ircsocket.IRCSocket)
+    test_enqueue(Socket)
     test_enqueue(MockSocket)
