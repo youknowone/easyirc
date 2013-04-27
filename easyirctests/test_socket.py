@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 import pytest
 
-from microirc import util
-from microirc.socket import Socket
+from easyirc import util
+from easyirc.socket import Socket
 
 import settings
 
@@ -104,8 +104,8 @@ def test_enqueue(SocketType):
         print '<-- get a message'
         return msg
 
-    sock.cmd('NICK', 'microbot')
-    sock.cmdl('USER', 'microbot', 'localhost', '0', 'realname')
+    sock.cmd('NICK', 'easybot')
+    sock.cmdl('USER', 'easybot', 'localhost', '0', 'realname')
 
     msg = None
     while msg is None:

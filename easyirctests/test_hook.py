@@ -1,8 +1,8 @@
 
 import pytest
 
-from microirc import util
-from microirc.hook import BaseHook, ConditionalHook, ExceptionHook, CommandHook
+from easyirc import util
+from easyirc.hook import BaseHook, ConditionalHook, ExceptionHook, CommandHook
 
 class PingHook(BaseHook):
     def run(self, client, message):

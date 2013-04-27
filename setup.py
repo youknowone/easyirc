@@ -7,7 +7,7 @@ except ImportError:
 
 
 def get_version():
-    with open('microirc/version.txt') as f:
+    with open('easyirc/version.txt') as f:
         return f.read().strip()
 
 
@@ -19,18 +19,18 @@ def get_readme():
         return ''
 
 setup(
-    name='microirc',
+    name='easyirc',
     version=get_version(),
-    description='Micro IRC is an IRC toolkit to develop IRC client or bot, especially for Python/IRC beginner.',
+    description='Easy IRC is an IRC toolkit to develop IRC client or bot, especially for Python/IRC beginner.',
     long_description=get_readme(),
     author='Jeong YunWon',
-    author_email='jeong+microirc@youknowone.org',
-    url='https://github.com/youknowone/microirc',
+    author_email='jeong+easyirc@youknowone.org',
+    url='https://github.com/youknowone/easyirc',
     packages=(
-        'microirc',
+        'easyirc',
     ),
     package_data={
-        'microirc': ['version.txt']
+        'easyirc': ['version.txt']
     },
     install_requires=[
         'distribute',

@@ -5,8 +5,8 @@ CONNECTIONS = [
         'name': 'localbot',
         'host': 'localhost',
         'port': 6667,
-        'nick': 'microirc',
-        'autojoins': ['#microirc'],
+        'nick': 'easyirc',
+        'autojoins': ['#easyirc'],
         'enabled': True,
     }
 ]
