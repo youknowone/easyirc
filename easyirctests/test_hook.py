@@ -31,17 +31,17 @@ def pong_conditional(client, message):
 
 ping_conditional = ConditionalHook(cond_conditional, pong_conditional)
 
-def pong_command(client, message):
-    client.cmd(PONG, message[1])
+def pong_message(client, message):
+    client.cmd(PONG, message)
     return True
 
-ping_command = MessageHook(PING, pong_command)
+ping_message = MessageHook(PING, pong_message)
 
 
 @pytest.mark.parametrize(['hook', 'ping'], [
     [ping_base, u'JFIOSJIEF'],
     [ping_conditional, u'한글핑'],
-    [ping_command, u'()@#RJIOEW'],
+    [ping_message, u'()@#RJIOEW'],
 ])
 def test_hook(hook, ping):
     class Client(object):

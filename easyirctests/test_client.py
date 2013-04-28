@@ -87,8 +87,52 @@ def test_callback(SocketType):
     client.start()
     client.thread.join()
 
+
+@pytest.mark.parametrize(['SocketType'], socktypes)
+def test_eventhook(SocketType):
+    client = EventHookClient(protocol.commands)
+    chan = connop['autojoins'][0]
+
+    @client.hookmsg(CREATED)
+    def created(client):
+        print 'created?', client
+        client.socket = test_create(SocketType)
+        client.connect()
+
+    @client.hookmsg(CONNECTED)
+    def connected(client):
+        print 'connected?', client
+        client.nick(connop['nick'])
+        client.user(connop['nick'], 'Bot by EasyIRC')
+
+    @client.hookmsg(PING)
+    def ping(client, tag):
+        print 'ping? pong!', client
+        client.pong(tag)
+
+    @client.hookmsg('375')
+    def msgofday(client, *args):
+        print 'message of the day!', client
+        client.join(chan)
+
+    @client.hookmsg(JOIN)
+    def join(client, *args):
+        print 'joined?', client
+        client.privmsg(chan, u'test the 이벤트훅')
+        client.quit(u'전 이만 갑니다')
+
+    @client.hookmsg('ERROR')
+    def error(client, *args):
+        print 'error?!', client
+        client.disconnect()
+
+    client.start()
+    client.thread.join()
+
 if __name__ == '__main__':
-    test_dispatch(socktypes[0][0])
-    test_dispatch(socktypes[1][0])
-    test_callback(socktypes[0][0])
-    test_callback(socktypes[1][0])
+    #test_dispatch(socktypes[0][0])
+    #test_dispatch(socktypes[1][0])
+    #test_callback(socktypes[0][0])
+    #test_callback(socktypes[1][0])
+    test_eventhook(socktypes[0][0])
+    test_eventhook(socktypes[1][0])

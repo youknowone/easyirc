@@ -5,6 +5,7 @@ import threading
 from .const import *
 from .socket import BaseSocket
 from . import util
+from .hook import BaseHook, ExceptionHook, MessageHook
 
 class NoneSocket(BaseSocket):
     def __init__(self, addr, charset='utf-8'):
@@ -123,14 +124,30 @@ class EventHookClient(CallbackClient):
         def irc_event(client, message):
             # It is reversed to grant higher priority to new hook
             for hook in reversed(client.hooks):
-                result = hook.run(message)
+                result = hook.run(client, message)
                 if result:
                     break
-            else:
-                self.unhandled(message)
-        def unhandled(client, message):
-            print 'Unhandled message event:', message
         self.hooks = []
-        self.unhandled = unhandled
-        CallbackClient.__init__(self, irc_events, commands, options)
+        CallbackClient.__init__(self, irc_event, commands, options)
+
+    def hook(self, hook):
+        if not isinstance(hook, BaseHook):
+            hook = BaseHook(hook)
+        self.hooks.append(hook)
+        return hook
+
+    def hookexc(self, exception):
+        def decorator(job):
+            hook = ExceptionHook(exception, job)
+            self.hooks.append(hook)
+            return hook
+        return decorator
+
+    def hookmsg(self, message):
+        def decorator(job):
+            hook = MessageHook(message, job)
+            self.hooks.append(hook)
+            return hook
+        return decorator
+
 
