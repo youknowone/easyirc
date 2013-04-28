@@ -10,39 +10,40 @@ def _add(action):
     return command
 
 @_add
-def connect(manager):
-    manager.connect()
+def connect(client):
+    client.connect()
 
 @_add
-def raw(manager, line):
-    manager.socket.sendln(line)
+def raw(client, line):
+    client.sendraw(line)
 
 @_add
-def ping(manager, tag):
-    manager.cmd(PING, tag)
+def ping(client, tag):
+    client.sends(PING, tag)
 
 @_add
-def join(manager, chan):
-    manager.cmd(JOIN, chan)
+def join(client, chan):
+    client.sends(JOIN, chan)
 
 @_add
-def part(manager, chan, reason=None):
+def part(client, chan, reason=None):
     if reason:
-        manager.cmdl(PART, chan, reason)
+        client.sendl(PART, chan, reason)
     else:
-        manager.cmd(PART, chan)
+        client.sends(PART, chan)
 
 @_add
-def quit(manager, reason=None):
+def quit(client, reason=None):
     if reason:
-        manager.cmdl(QUIT, reason)
+        client.sendl(QUIT, reason)
     else:
-        manager.cmd(QUIT)
+        client.sends(QUIT)
 
 @_add
-def privmsg(manager, target, msg):
-    manager.cmdl(PRIVMSG, target, msg)
+def privmsg(client, target, msg):
+    client.sendl(PRIVMSG, target, msg)
 
 @_add
-def notice(manager, target, msg):
-    manager.cmdl(PRIVMSG, target, msg)
+def notice(client, target, msg):
+    client.sendl(PRIVMSG, target, msg)
+

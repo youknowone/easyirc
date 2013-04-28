@@ -6,7 +6,7 @@ import socket
 from . import util
 from .const import *
 
-class Socket(object):
+class BaseSocket(object):
     def __init__(self, addr, charset='utf-8'):
         """addr is a tuple represents (host, port)"""
         self.addr = addr
@@ -14,12 +14,20 @@ class Socket(object):
         self.create_socket()
 
     def create_socket(self):
+        """Override to change internal socket."""
+        self.msgqueue = [CREATED] # EVERYTHING-IS-RESPONSE!
         self.socket = socket.socket()
-        self.queue = [CREATED] # EVERYTHING-IS-RESPONSE!
         self.recvbuffer = ''
 
     def send(self, line):
-        self.socket.send(line.encode(self.charset))
+        raise NotImplementedError
+    
+    def connect(self):
+        self.msgqueue.append(CONNECTED) # EVERYTHING-IS-RESPONSE!
+        raise NotImplementedError
+    
+    def _recv(self):
+        raise NotImplementedError
 
     def sendln(self, line, *arg, **kwargs):
         if len(arg) or len(kwargs):
@@ -27,29 +35,25 @@ class Socket(object):
         #print '--> SEND', line
         self.send(line + '\r\n')
 
-    def connect(self):
-        self.socket.connect(self.addr)
-        self.queue.append(CONNECTED) # EVERYTHING-IS-RESPONSE!
-
-    def cmd(self, cmd, *args):
+    def cmds(self, cmd, *args):
         self.sendln(u' '.join(map(unicode, [cmd] + list(args))))
 
     def cmdl(self, cmd, *args): # destructive!
         nargs = list(args[:-1]) + [':' + args[-1]]
-        self.cmd(cmd, *nargs)
+        self.cmds(cmd, *nargs)
 
-    def cmda(self, cmd, *args):
+    def cmd(self, cmd, *args):
         if ' ' in args[-1]:
             self.cmdl(cmd, *args)
         else:
-            self.cmd(cmd, *args)
+            self.cmds(cmd, *args)
 
     def dispatch(self):
-        """Dispatch an item from queue."""
-        if len(self.queue) == 0:
+        """Dispatch an item from msgqueue."""
+        if len(self.msgqueue) == 0:
            return None
-        msg = self.queue[0]
-        del(self.queue[0])
+        msg = self.msgqueue[0]
+        del(self.msgqueue[0])
         return msg
 
     def dispatch_all(self):
@@ -60,13 +64,7 @@ class Socket(object):
                 yield msg
         raise StopIteration
 
-    def _recv(self):
-        """NOTE: blocking"""
-        received = self.socket.recv(1024) # 1kb is enough for irc
-        #print '<-- RECV:', received
-        self.recvbuffer += received
-
-    def _debuffer(self):
+    def _split_buffer(self):
         """Catch 'ValueError' to check unsplitable"""
         newline, self.recvbuffer = self.recvbuffer.split('\r\n', 1)
         try:
@@ -76,39 +74,38 @@ class Socket(object):
             return newline
 
     def _enqueue(self, line):
-        self.queue.append(line)
+        self.msgqueue.append(line)
 
     def _enqueue_buffer(self):
-        newline = self._debuffer()
-        self._enqueue(newline)
-
-    def _enqueue_buffer_all(self):
         try:
             while True:
-                self._enqueue_buffer()
+                newline = self._split_buffer()
+                self._enqueue(newline)
         except ValueError:
             pass
 
-    def recv_enqueue(self, force_queue=False):
+    def recv(self, wait_enqueue=False):
         """NOTE: blocking"""
         while True:
             try:
-                self._recv()
-                self._enqueue_buffer_all()
+                self.recvbuffer += self._recv()
+                self._enqueue_buffer()
             except Exception as e:
+                raise e # debug
                 self._enqueue(e)
-            if not force_queue or len(self.queue) > 0:
+            if not wait_enqueue or len(self.msgqueue) > 0:
                 break
 
-    def dispatch_cmd(self):
-        """Actually, not a socket-level but for easy-debug."""
-        msg = self.dispatch()
-        if msg is None:
-            return None
-        return util.split(msg)
 
-    def dispatch_all_cmd(self):
-        """Actually, not a socket-level but for easy-debug."""
-        for msg in self.dispatch_all():
-            yield util.split(msg)
+class Socket(BaseSocket):
+    def send(self, line):
+        self.socket.send(line.encode(self.charset))
+
+    def connect(self):
+        self.socket.connect(self.addr)
+        self.msgqueue.append(CONNECTED) # EVERYTHING-IS-RESPONSE!
+
+    def _recv(self):
+        """NOTE: blocking"""
+        return self.socket.recv(1024) # 1kb is enough for irc
 

@@ -8,7 +8,7 @@ class PingHook(BaseHook):
     def run(self, client, message):
         if not isinstance(message, unicode):
             return False
-        items = util.split(message)
+        items = util.cmdsplit(message)
         if items.cmd == 'ping':
             client.cmd('PONG', items[1])
             return True
@@ -20,11 +20,11 @@ ping_base = PingHook()
 def cond_conditional(client, message):
     if not isinstance(message, unicode):
         return False
-    items = util.split(message)
+    items = util.cmdsplit(message)
     return items.cmd == 'ping'
 
 def pong_conditional(client, message):
-    items = util.split(message)
+    items = util.cmdsplit(message)
     client.cmd('PONG', items[1])
     return True
 

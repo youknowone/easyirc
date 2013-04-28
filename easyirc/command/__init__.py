@@ -7,7 +7,7 @@ class CommandManager(object):
         self.commands = commands
 
     def putln(self, command):
-        items = util.split(command)
+        items = util.cmdsplit(command)
         self.put(items)
 
     def put(self, items):
@@ -15,17 +15,6 @@ class CommandManager(object):
             items = util.Line(items)
         command = self.commands[items.cmd]
         command.run(self, *items[1:])
-
-    @property
-    def socket(self):
-        return self.client.socket
-
-    def cmd(self, *args):
-        self.socket.cmd(*args)
-
-    def cmdl(self, *args):
-        self.socket.cmdl(*args)
-
 
 class BaseCommand(object):
     def __init__(self, action):

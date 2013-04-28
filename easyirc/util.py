@@ -8,7 +8,7 @@ class Line(list):
     def cmd(self):
         return self[0].lower()
 
-def split(line):
+def cmdsplit(line):
     """General IRC line decoder"""
     def decolon(item):
         """Colon has special usage in IRC protocol"""

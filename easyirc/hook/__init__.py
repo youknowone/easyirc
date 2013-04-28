@@ -57,10 +57,10 @@ class MessageHook(ConditionalHook):
         def condition(client, message):
             if not isinstance(message, unicode):
                 return False
-            return util.split(message).cmd.lower() == cmd.lower()
+            return util.cmdsplit(message).cmd.lower() == cmd.lower()
         ConditionalHook.__init__(self, condition, job)
 
     def job(self, client, message):
-        return self.job_func(client, util.split(message))
+        return self.job_func(client, util.cmdsplit(message))
 
 

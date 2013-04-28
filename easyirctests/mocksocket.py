@@ -1,16 +1,17 @@
 
 # -*- coding: utf-8 -*-
 from easyirc import util
+from easyirc.const import *
 from easyirc.socket import Socket
 
 class MockSocket(Socket):
     def create_socket(self):
         self.socket = MockServerSocket()
-        self.queue = ['CREATED'] # EVERYTHING-IS-RESPONSE!
+        self.msgqueue = [CREATED] # EVERYTHING-IS-RESPONSE!
         self.recvbuffer = ''
 
     def connect(self):
-        self.queue.append('CONNECTED') # EVERYTHING-IS-RESPONSE!
+        self.msgqueue.append(CONNECTED) # EVERYTHING-IS-RESPONSE!
 
     def put(self, line):
         self.recvbuffer += line

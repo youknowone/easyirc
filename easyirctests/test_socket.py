@@ -14,7 +14,7 @@ from mocksocket import *
     ['PRIVMSG #chan nick :this is the msg', ['PRIVMSG', '#chan', 'nick', 'this is the msg']],
 ])
 def test_split(line, items):
-    splited = util.split(line)
+    splited = util.cmdsplit(line)
     assert splited == items
 
 socktypes = [[MockSocket]]
@@ -46,7 +46,8 @@ def test_enqueue(SocketType):
 
     def dispatch_useful():
         print '--> throwing out unusefuls'
-        for msg in sock.dispatch_all_cmd():
+        for msg in sock.dispatch_all():
+            msg = util.cmdsplit(msg)
             print u' '.join(msg).encode('utf-8')
             if msg[0] == 'PING':
                 sock.cmd('PONG', msg[1])
@@ -70,7 +71,7 @@ def test_enqueue(SocketType):
 
     msg = None
     while msg is None:
-        sock.recv_enqueue()
+        sock.recv()
         msg = dispatch_useful()
     assert msg[0] == '375' # message of the day - for the registered user only
 
@@ -79,7 +80,7 @@ def test_enqueue(SocketType):
     sock.cmd('JOIN', chan)
     msg = None
     while msg is None:
-        sock.recv_enqueue()
+        sock.recv()
         msg = dispatch_useful()
     assert msg[0] == 'JOIN'
     sock.cmdl('PRIVMSG', chan, 'can you see my message?')
@@ -87,7 +88,7 @@ def test_enqueue(SocketType):
     sock.cmdl('PART', chan, u'test did end with non-ascii 한글')
     msg = None
     while msg is None:
-        sock.recv_enqueue()
+        sock.recv()
         msg = dispatch_useful()
     assert msg[0] == 'PART'
 
