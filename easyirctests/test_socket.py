@@ -26,10 +26,9 @@ if settings.TEST_REALSERVER:
     [MockSocket],
 ])
 def test_create(SocketType):
-    connop = settings.CONNECTIONS[0]
-    sock = SocketType((connop['host'], connop['port']), 'utf-8')
-    msg = sock.dispatch()
-    assert msg == 'CREATED'
+    connop = settings.TEST_CONNECTION
+    addr = (connop['host'], connop['port'])
+    sock = SocketType(addr, 'utf-8')
     assert sock.dispatch() is None
     return sock
 
@@ -75,7 +74,7 @@ def test_enqueue(SocketType):
         msg = dispatch_useful()
     assert msg[0] == '375' # message of the day - for the registered user only
 
-    connop = settings.CONNECTIONS[0]
+    connop = settings.TEST_CONNECTION
     chan = connop['autojoins'][0]
     sock.cmd('JOIN', chan)
     msg = None
@@ -93,5 +92,6 @@ def test_enqueue(SocketType):
     assert msg[0] == 'PART'
 
 if __name__ == '__main__':
-    test_enqueue(Socket)
     test_enqueue(MockSocket)
+    if settings.TEST_REALSERVER:
+        test_enqueue(Socket)

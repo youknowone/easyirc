@@ -18,8 +18,20 @@ def raw(client, line):
     client.sendraw(line)
 
 @_add
+def nick(client, nick):
+    client.sends(NICK, nick)
+
+@_add
+def user(client, username, realname):
+    client.sendl(USER, username, '*', '0', realname)
+
+@_add
 def ping(client, tag):
     client.sends(PING, tag)
+
+@_add
+def pong(client, tag):
+    client.sends(PONG, tag)
 
 @_add
 def join(client, chan):

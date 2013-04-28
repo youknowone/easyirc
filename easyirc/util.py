@@ -6,7 +6,7 @@ class Line(list):
 
     @property
     def cmd(self):
-        return self[0].lower()
+        return self[0]
 
 def cmdsplit(line):
     """General IRC line decoder"""

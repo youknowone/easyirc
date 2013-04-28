@@ -2,10 +2,21 @@
 #-*- coding: utf-8 -*-
 
 import threading
-from .socket import Socket
+from .const import *
+from .socket import BaseSocket
 from . import util
 
-class BaseClient(threading.Thread):
+class NoneSocket(BaseSocket):
+    def __init__(self, addr, charset='utf-8'):
+        self.connected = None
+
+        BaseSocket.__init__(self, addr, charset)
+
+    def dispatch(self):
+        return CREATED
+none_socket = NoneSocket(None)
+
+class BaseClient(object):
     """Command IRC client interface.
     Any client should support:
         self.socket: any ircsocket
@@ -17,14 +28,25 @@ class BaseClient(threading.Thread):
 
     def dispatch(self):
         """Get a message from socket."""
-        self.socket.dispatch()
+        return self.socket.dispatch()
 
     def run(self):
         """Thread loop."""
-        while True:
+        while self.socket.connected is not False:
             self.runloop_unit()
 
+    def start(self):
+        self.thread = threading.Thread()
+        self.thread.run = self.run
+        self.thread.start()
+
     #command interface
+    def connect(self):
+        self.socket.connect()
+
+    def disconnect(self):
+        self.socket.disconnect()
+
     def cmdln(self, command):
         items = util.cmdsplit(command)
         self.cmd(*items)
@@ -40,12 +62,23 @@ class BaseClient(threading.Thread):
 
     def sendl(self, *args):
         self.socket.cmdl(*args)
-    
+
     def sends(self, *args):
         self.socket.cmds(*args)
-    
+
     def send(self, *args):
         self.socket.cmd(*args)
+
+    def __getattr__(self, key):
+        if key in self.commands:
+            action = self.commands[key].run
+            def call(*args):
+                return action(self, *args)
+            return call
+        try:
+            return self.__getattr__(key)
+        except:
+            return self.__getattribute__(key)
 
 
 class DispatchClient(BaseClient):
@@ -63,18 +96,14 @@ class DispatchClient(BaseClient):
 
     def runloop_unit(self):
         """NOTE: blocking"""
-        self.socket.recv_enqueue()
+        self.socket.recv()
 
 
 class CallbackClient(BaseClient):
     """Callback-driven IRC client"""
 
     def __init__(self, callback, commands, options=None):
-        if isinstance(sock_or_addr, tuple):
-            self.socket = Socket(sock_or_addr)
-        else:
-            self.socket = sock_or_addr
-        self.socket = None
+        self.socket = none_socket
         self.callback = callback
         self.commands = commands
 
@@ -86,8 +115,7 @@ class CallbackClient(BaseClient):
         if msg is not None:
             self.callback(self, msg)
         else:
-            """NOTE: blocking HERE"""
-            super(EventClient, self).runloop_unit()
+            self.socket.recv()
 
 
 class EventHookClient(CallbackClient):

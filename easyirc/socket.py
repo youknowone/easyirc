@@ -3,7 +3,7 @@
 from __future__ import absolute_import
 import socket
 
-from . import util
+from . import util, exception
 from .const import *
 
 class BaseSocket(object):
@@ -11,21 +11,27 @@ class BaseSocket(object):
         """addr is a tuple represents (host, port)"""
         self.addr = addr
         self.charset = charset
+        self.msgqueue = []
+        self.recvbuffer = ''
+        self.connected = None
         self.create_socket()
 
     def create_socket(self):
         """Override to change internal socket."""
-        self.msgqueue = [CREATED] # EVERYTHING-IS-RESPONSE!
         self.socket = socket.socket()
-        self.recvbuffer = ''
 
     def send(self, line):
         raise NotImplementedError
-    
+
     def connect(self):
         self.msgqueue.append(CONNECTED) # EVERYTHING-IS-RESPONSE!
+        self.connected = True
         raise NotImplementedError
-    
+
+    def disconnect(self):
+        self.msgqueue.append(DISCONNECTED) # EVERYTHING-IS-RESPONSE!
+        raise NotImplementedError
+
     def _recv(self):
         raise NotImplementedError
 
@@ -88,10 +94,19 @@ class BaseSocket(object):
         """NOTE: blocking"""
         while True:
             try:
-                self.recvbuffer += self._recv()
+                recv = self._recv()
+                self.recvbuffer += recv
                 self._enqueue_buffer()
             except Exception as e:
-                raise e # debug
+                if isinstance(e, socket.error):
+                    self.msgqueue.append(DISCONNECTED)
+                    self.connected = False
+                    #raise exception.Disconnected
+                else:
+                    import traceback
+                    print '--- Error caught ---'
+                    traceback.print_exc()
+                    raise e # debug
                 self._enqueue(e)
             if not wait_enqueue or len(self.msgqueue) > 0:
                 break
@@ -104,6 +119,11 @@ class Socket(BaseSocket):
     def connect(self):
         self.socket.connect(self.addr)
         self.msgqueue.append(CONNECTED) # EVERYTHING-IS-RESPONSE!
+        self.connected = True
+
+    def disconnect(self):
+        #self.socket.shutdown(socket.SHUT_RDWR)
+        self.socket.close()
 
     def _recv(self):
         """NOTE: blocking"""

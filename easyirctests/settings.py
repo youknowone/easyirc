@@ -18,3 +18,5 @@ try:
 except ImportError:
     print '*** NO local_settings.py file set up. read README! ***'
     pass
+
+TEST_CONNECTION = CONNECTIONS[0]
