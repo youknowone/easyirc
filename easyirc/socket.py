@@ -4,11 +4,7 @@ from __future__ import absolute_import
 import socket
 
 from . import util
-
-
-CREATED = 'CREATED'
-CONNECTED = 'CONNECTED'
-
+from .const import *
 
 class Socket(object):
     def __init__(self, addr, charset='utf-8'):

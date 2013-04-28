@@ -2,7 +2,7 @@
 import pytest
 
 from easyirc import util
-from easyirc.hook import BaseHook, ConditionalHook, ExceptionHook, CommandHook
+from easyirc.hook import BaseHook, ConditionalHook, ExceptionHook, MessageHook
 
 class PingHook(BaseHook):
     def run(self, client, message):
@@ -34,7 +34,7 @@ def pong_command(client, message):
     client.cmd('PONG', message[1])
     return True
 
-ping_command = CommandHook('ping', pong_command)
+ping_command = MessageHook('ping', pong_command)
 
 
 @pytest.mark.parametrize(['hook', 'ping'], [

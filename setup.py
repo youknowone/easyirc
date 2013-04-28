@@ -28,6 +28,8 @@ setup(
     url='https://github.com/youknowone/easyirc',
     packages=(
         'easyirc',
+        'easyirc/command',
+        'easyirc/hook',
     ),
     package_data={
         'easyirc': ['version.txt']

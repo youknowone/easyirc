@@ -1,7 +1,7 @@
 
 #-*- coding: utf-8 -*-
 
-from . import util
+from .. import util
 
 class BaseHook(object):
     """Base hook interface.
@@ -48,7 +48,7 @@ class ExceptionHook(ConditionalHook):
         ConditionalHook.__init__(self, condition, job)
 
 
-class CommandHook(ConditionalHook):
+class MessageHook(ConditionalHook):
     """Conditional hook interface.
     Pass command and job callback to create a hook.
     NOTE: Multiple command hook works - if message is not consumed.

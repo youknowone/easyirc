@@ -4,6 +4,9 @@ class Line(list):
         list.__init__(self, iterable)
         self.header = None
 
+    @property
+    def cmd(self):
+        return self[0].lower()
 
 def split(line):
     """General IRC line decoder"""
@@ -31,5 +34,4 @@ def split(line):
         items.append(decolon(item))
     # Attach the last item
     items.append(decolon(line))
-    items.cmd = items[0].lower()
     return items
