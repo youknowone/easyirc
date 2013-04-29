@@ -1,61 +1,56 @@
 
 from ..const import *
-from . import BaseCommand
+from . import CommandManager, BaseCommand
 
-commands = {}
+manager = CommandManager()
 
-def _add(action):
-    command = BaseCommand(action)
-    commands[action.__name__] = command
-    return command
-
-@_add
+@manager.command
 def connect(client):
     client.connect()
 
-@_add
+@manager.command
 def raw(client, line):
     client.sendraw(line)
 
-@_add
+@manager.command
 def nick(client, nick):
     client.sends(NICK, nick)
 
-@_add
+@manager.command
 def user(client, username, realname):
     client.sendl(USER, username, '*', '0', realname)
 
-@_add
+@manager.command
 def ping(client, tag):
     client.sends(PING, tag)
 
-@_add
+@manager.command
 def pong(client, tag):
     client.sends(PONG, tag)
 
-@_add
+@manager.command
 def join(client, chan):
     client.sends(JOIN, chan)
 
-@_add
+@manager.command
 def part(client, chan, reason=None):
     if reason:
         client.sendl(PART, chan, reason)
     else:
         client.sends(PART, chan)
 
-@_add
+@manager.command
 def quit(client, reason=None):
     if reason:
         client.sendl(QUIT, reason)
     else:
         client.sends(QUIT)
 
-@_add
+@manager.command
 def privmsg(client, target, msg):
     client.sendl(PRIVMSG, target, msg)
 
-@_add
+@manager.command
 def notice(client, target, msg):
     client.sendl(PRIVMSG, target, msg)
 

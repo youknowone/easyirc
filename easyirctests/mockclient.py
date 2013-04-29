@@ -11,10 +11,10 @@ class MockCommandSocket(Socket):
 
 
 class MockCommandClient(BaseClient):
-    def __init__(self, commands):
+    def __init__(self, cmdmanager):
         self.cmdbuffer = []
         self.socket = MockCommandSocket()
-        self.commands = commands
+        self.cmdmanager = cmdmanager
 
         BaseClient.__init__(self)
 

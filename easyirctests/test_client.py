@@ -19,7 +19,7 @@ def test_dispatch(SocketType):
     print SocketType
 
     socket = test_create(SocketType)
-    client = DispatchClient(socket, protocol.commands)
+    client = DispatchClient(socket, protocol.manager)
     msg = client.dispatch()
     client.connect()
 
@@ -83,14 +83,14 @@ def test_callback(SocketType):
         else:
             print m
 
-    client = CallbackClient(callback, protocol.commands)
+    client = CallbackClient(callback, protocol.manager)
     client.start()
     client.thread.join()
 
 
 @pytest.mark.parametrize(['SocketType'], socktypes)
 def test_eventhook(SocketType):
-    client = EventHookClient(protocol.commands)
+    client = EventHookClient(protocol.manager)
     chan = connop['autojoins'][0]
 
     @client.hookmsg(CREATED)

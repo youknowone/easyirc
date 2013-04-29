@@ -21,7 +21,7 @@ class BaseClient(object):
     """Command IRC client interface.
     Any client should support:
         self.socket: any ircsocket
-        self.commands: command dictionary
+        self.cmdmanager: command dictionary
     """
 
     def runloop_unit(self):
@@ -55,8 +55,7 @@ class BaseClient(object):
     def cmd(self, *items):
         if not isinstance(items, util.Line):
             items = util.Line(items)
-        command = self.commands[items.cmd]
-        command.run(self, *items[1:])
+        self.cmdmanager.run(self, *items)
 
     def sendraw(self, line, *args, **kwargs):
         self.socket.sendln(line, *args, **kwargs)
@@ -71,8 +70,8 @@ class BaseClient(object):
         self.socket.cmd(*args)
 
     def __getattr__(self, key):
-        if key in self.commands:
-            action = self.commands[key].run
+        if key in self.cmdmanager:
+            action = self.cmdmanager[key].run
             def call(*args):
                 return action(self, *args)
             return call
@@ -85,12 +84,12 @@ class BaseClient(object):
 class DispatchClient(BaseClient):
     """Common IRC Client interface."""
 
-    def __init__(self, sock_or_addr, commands, options=None):
+    def __init__(self, sock_or_addr, cmdmanager, options=None):
         if isinstance(sock_or_addr, tuple):
             self.socket = Socket(sock_or_addr)
         else:
             self.socket = sock_or_addr
-        self.commands = commands
+        self.cmdmanager = cmdmanager
         self.options = options
 
         BaseClient.__init__(self)
@@ -103,10 +102,10 @@ class DispatchClient(BaseClient):
 class CallbackClient(BaseClient):
     """Callback-driven IRC client"""
 
-    def __init__(self, callback, commands, options=None):
+    def __init__(self, callback, cmdmanager, options=None):
         self.socket = none_socket
         self.callback = callback
-        self.commands = commands
+        self.cmdmanager = cmdmanager
 
         BaseClient.__init__(self)
 
@@ -120,7 +119,7 @@ class CallbackClient(BaseClient):
 
 
 class EventHookClient(CallbackClient):
-    def __init__(self, commands, options=None):
+    def __init__(self, cmdmanager, options=None):
         def irc_event(client, message):
             # It is reversed to grant higher priority to new hook
             for hook in reversed(client.hooks):
@@ -128,7 +127,7 @@ class EventHookClient(CallbackClient):
                 if result:
                     break
         self.hooks = []
-        CallbackClient.__init__(self, irc_event, commands, options)
+        CallbackClient.__init__(self, irc_event, cmdmanager, options)
 
     def hook(self, hook):
         if not isinstance(hook, BaseHook):

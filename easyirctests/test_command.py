@@ -6,7 +6,7 @@ from easyirc.command import protocol
 
 from mocksocket import *
 
-client = MockCommandClient(protocol.commands)
+client = MockCommandClient(protocol.manager)
 
 @pytest.mark.parametrize(['line', 'result'], [
     [u'ping test', u'PING test'],
