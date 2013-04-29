@@ -5,7 +5,6 @@ import threading
 from .const import *
 from .socket import BaseSocket
 from . import util
-from .hook import BaseHook, ExceptionHook, MessageHook
 
 class NoneSocket(BaseSocket):
     def __init__(self, addr, charset='utf-8'):
@@ -36,6 +35,13 @@ class BaseClient(object):
     def dispatch(self):
         """Get a message from socket."""
         return self.socket.dispatch()
+
+    def handle_message(self):
+        message = self.socket.dispatch()
+        if message is None:
+            return None
+        self.eventmanager.putln(self, message)
+        return True
 
     def run(self):
         """Thread loop."""
@@ -95,6 +101,14 @@ class DispatchClient(BaseClient):
         self.socket.recv()
 
 
+class EventHookClient(BaseClient):
+    def runloop_unit(self):
+        """NOTE: blocking"""
+        msg = self.handle_message()
+        if msg is None:
+            self.socket.recv()
+
+
 class CallbackClient(BaseClient):
     """Callback-driven IRC client"""
 
@@ -110,37 +124,4 @@ class CallbackClient(BaseClient):
             self.callback(self, msg)
         else:
             self.socket.recv()
-
-
-class EventHookClient(CallbackClient):
-    def __init__(self, eventmanager, cmdmanager, options=None):
-        def irc_event(client, message):
-            # It is reversed to grant higher priority to new hook
-            for hook in reversed(client.hooks):
-                result = hook.run(client, message)
-                if result:
-                    break
-        self.hooks = []
-        CallbackClient.__init__(self, irc_event, cmdmanager, options)
-
-    def hook(self, hook):
-        if not isinstance(hook, BaseHook):
-            hook = BaseHook(hook)
-        self.hooks.append(hook)
-        return hook
-
-    def hookexc(self, exception):
-        def decorator(job):
-            hook = ExceptionHook(exception, job)
-            self.hooks.append(hook)
-            return hook
-        return decorator
-
-    def hookmsg(self, message):
-        def decorator(job):
-            hook = MessageHook(message, job)
-            self.hooks.append(hook)
-            return hook
-        return decorator
-
 

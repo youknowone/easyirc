@@ -3,9 +3,9 @@ import pytest
 
 from easyirc import util
 from easyirc.const import *
-from easyirc.hook import BaseHook, ConditionalHook, ExceptionHook, MessageHook
+from easyirc.event import EventManager, BaseHandler, ConditionalHandler, ExceptionHandler, MessageHandler
 
-class PingHook(BaseHook):
+class PingHandler(BaseHandler):
     def run(self, client, message):
         if not isinstance(message, unicode):
             return False
@@ -16,7 +16,7 @@ class PingHook(BaseHook):
         return False
 
 
-ping_base = PingHook()
+ping_base = PingHandler()
 
 def cond_conditional(client, message):
     if not isinstance(message, unicode):
@@ -29,13 +29,13 @@ def pong_conditional(client, message):
     client.cmd(PONG, items[1])
     return True
 
-ping_conditional = ConditionalHook(cond_conditional, pong_conditional)
+ping_conditional = ConditionalHandler(cond_conditional, pong_conditional)
 
 def pong_message(client, message):
     client.cmd(PONG, message)
     return True
 
-ping_message = MessageHook(PING, pong_message)
+ping_message = MessageHandler(PING, pong_message)
 
 
 @pytest.mark.parametrize(['hook', 'ping'], [

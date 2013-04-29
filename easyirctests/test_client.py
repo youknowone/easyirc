@@ -4,6 +4,7 @@ import time
 import pytest
 from easyirc.client import DispatchClient, CallbackClient, EventHookClient
 from easyirc.command import protocol
+from easyirc.event import EventManager
 from easyirc.const import *
 from easyirc import util
 from mocksocket import MockSocket
@@ -89,46 +90,58 @@ def test_callback(SocketType):
     client.thread.join()
 
 
+event = EventManager()
+chan = connop['autojoins'][0]
+@event.hookmsg(CREATED)
+def created(client):
+    print 'created?', client
+    client.socket = event.socket
+    client.connect()
+
+@event.hookmsg(CONNECTED)
+def connected(client):
+    print 'connected?', client
+    client.nick(connop['nick'])
+    client.user(connop['nick'], 'Bot by EasyIRC')
+
+@event.hookmsg(PING)
+def ping(client, tag):
+    print 'ping? pong!', client
+    client.pong(tag)
+
+@event.hookmsg('375')
+def msgofday(client, *args):
+    print 'message of the day!', client
+    client.join(chan)
+
+@event.hookmsg(JOIN)
+def join(client, *args):
+    print 'joined?', client
+    client.privmsg(chan, u'test the 이벤트훅')
+    client.quit(u'전 이만 갑니다')
+
+@event.hookmsg('ERROR')
+def error(client, *args):
+    print 'error?!', client
+    client.disconnect()
+
+
+@pytest.mark.parametrize(['SocketType'], socktypes)
+def test_dispatch_event(SocketType):
+    event.socket = test_create(SocketType)
+    client = DispatchClient(event, protocol.manager)
+    client.start()
+    while client.thread.is_alive():
+        client.handle_message()
+    client.thread.join()
+
 @pytest.mark.parametrize(['SocketType'], socktypes)
 def test_eventhook(SocketType):
-    client = EventHookClient(None, protocol.manager)
-    chan = connop['autojoins'][0]
-
-    @client.hookmsg(CREATED)
-    def created(client):
-        print 'created?', client
-        client.socket = test_create(SocketType)
-        client.connect()
-
-    @client.hookmsg(CONNECTED)
-    def connected(client):
-        print 'connected?', client
-        client.nick(connop['nick'])
-        client.user(connop['nick'], 'Bot by EasyIRC')
-
-    @client.hookmsg(PING)
-    def ping(client, tag):
-        print 'ping? pong!', client
-        client.pong(tag)
-
-    @client.hookmsg('375')
-    def msgofday(client, *args):
-        print 'message of the day!', client
-        client.join(chan)
-
-    @client.hookmsg(JOIN)
-    def join(client, *args):
-        print 'joined?', client
-        client.privmsg(chan, u'test the 이벤트훅')
-        client.quit(u'전 이만 갑니다')
-
-    @client.hookmsg('ERROR')
-    def error(client, *args):
-        print 'error?!', client
-        client.disconnect()
-
+    event.socket = test_create(SocketType)
+    client = EventHookClient(event, protocol.manager)
     client.start()
     client.thread.join()
+
 
 if __name__ == '__main__':
     #test_dispatch(socktypes[0][0])

@@ -29,7 +29,7 @@ setup(
     packages=(
         'easyirc',
         'easyirc/command',
-        'easyirc/hook',
+        'easyirc/event',
     ),
     package_data={
         'easyirc': ['version.txt']
