@@ -18,9 +18,10 @@ connop = settings.TEST_CONNECTION
 def test_dispatch(SocketType):
     print SocketType
 
-    socket = test_create(SocketType)
-    client = DispatchClient(socket, protocol.manager)
+    client = DispatchClient(None, protocol.manager)
     msg = client.dispatch()
+    assert msg == CREATED
+    client.socket = test_create(SocketType)
     client.connect()
 
     client.start()
@@ -90,7 +91,7 @@ def test_callback(SocketType):
 
 @pytest.mark.parametrize(['SocketType'], socktypes)
 def test_eventhook(SocketType):
-    client = EventHookClient(protocol.manager)
+    client = EventHookClient(None, protocol.manager)
     chan = connop['autojoins'][0]
 
     @client.hookmsg(CREATED)

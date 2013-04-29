@@ -24,6 +24,12 @@ class BaseClient(object):
         self.cmdmanager: command dictionary
     """
 
+    def __init__(self, eventmanager, cmdmanager, options=None):
+        self.eventmanager = eventmanager
+        self.cmdmanager = cmdmanager
+        self.options = options
+        self.socket = none_socket
+
     def runloop_unit(self):
         raise NotImplementedError
 
@@ -82,17 +88,7 @@ class BaseClient(object):
 
 
 class DispatchClient(BaseClient):
-    """Common IRC Client interface."""
-
-    def __init__(self, sock_or_addr, cmdmanager, options=None):
-        if isinstance(sock_or_addr, tuple):
-            self.socket = Socket(sock_or_addr)
-        else:
-            self.socket = sock_or_addr
-        self.cmdmanager = cmdmanager
-        self.options = options
-
-        BaseClient.__init__(self)
+    """Client implementation based on manual dispatching."""
 
     def runloop_unit(self):
         """NOTE: blocking"""
@@ -103,11 +99,9 @@ class CallbackClient(BaseClient):
     """Callback-driven IRC client"""
 
     def __init__(self, callback, cmdmanager, options=None):
-        self.socket = none_socket
         self.callback = callback
-        self.cmdmanager = cmdmanager
 
-        BaseClient.__init__(self)
+        BaseClient.__init__(self, None, cmdmanager, options=None)
 
     def runloop_unit(self):
         """NOTE: blocking"""
@@ -119,7 +113,7 @@ class CallbackClient(BaseClient):
 
 
 class EventHookClient(CallbackClient):
-    def __init__(self, cmdmanager, options=None):
+    def __init__(self, eventmanager, cmdmanager, options=None):
         def irc_event(client, message):
             # It is reversed to grant higher priority to new hook
             for hook in reversed(client.hooks):

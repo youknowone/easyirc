@@ -11,10 +11,8 @@ class MockCommandSocket(Socket):
 
 
 class MockCommandClient(BaseClient):
-    def __init__(self, cmdmanager):
+    def __init__(self, eventmanager, cmdmanager):
+        BaseClient.__init__(self, eventmanager, cmdmanager)
+
         self.cmdbuffer = []
         self.socket = MockCommandSocket()
-        self.cmdmanager = cmdmanager
-
-        BaseClient.__init__(self)
-
