@@ -1,27 +1,46 @@
 
-class Line(list):
-    def __init__(self, iterable=[]):
-        list.__init__(self, iterable)
-        self.header = None
+class MessageLine(list):
+    @property
+    def sender(self):
+        return self[0]
 
+    @property
+    def nick(self):
+        return self[0].split('@', 1)[0]
+
+    @property
+    def type(self):
+        return self[1]
+
+
+class CommandLine(list):
     @property
     def cmd(self):
         return self[0]
 
-def cmdsplit(line):
-    """General IRC line decoder"""
-    def decolon(item):
-        """Colon has special usage in IRC protocol"""
-        if item[0] == ':':
-            return item[1:]
-        return item
 
-    items = Line()
+def decolon(item):
+    """Colon has special usage in IRC protocol"""
+    if item[0] == ':':
+        return item[1:]
+    return item
 
-    #Remove the line header, if exists
+def msgsplit(line):
+    """General IRC message decoder"""
+    items = MessageLine()
+
+    #Append the sender, if not exists
     if line[0] == ':':
         item, line = line.split(' ', 1)
-        items.header = decolon(item)
+        items.append(decolon(item))
+    else:
+        items.append(None)
+
+    items += cmdsplit(line)
+    return items
+
+def cmdsplit(line):
+    items = CommandLine()
 
     while ' ' in line:
         # Colon-headed item means it is long argument
@@ -35,3 +54,4 @@ def cmdsplit(line):
     # Attach the last item
     items.append(decolon(line))
     return items
+

@@ -65,8 +65,6 @@ class BaseClient(object):
         self.cmd(*items)
 
     def cmd(self, *items):
-        if not isinstance(items, util.Line):
-            items = util.Line(items)
         self.cmdmanager.run(self, *items)
 
     def sendraw(self, line, *args, **kwargs):
@@ -82,6 +80,7 @@ class BaseClient(object):
         self.socket.cmd(*args)
 
     def __getattr__(self, key):
+        """Borrow commands from command manager."""
         if key in self.cmdmanager:
             action = self.cmdmanager[key].run
             def call(*args):

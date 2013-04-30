@@ -31,7 +31,7 @@ def pong_conditional(client, message):
 
 ping_conditional = ConditionalHandler(cond_conditional, pong_conditional)
 
-def pong_message(client, message):
+def pong_message(client, sender, message):
     client.cmd(PONG, message)
     return True
 

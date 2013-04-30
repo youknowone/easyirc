@@ -12,8 +12,8 @@ class CommandManager(dict):
         self.run(client, *items)
 
     def run(self, client, *items):
-        if not isinstance(items, util.Line):
-            items = util.Line(items)
+        if not isinstance(items, util.CommandLine):
+            items = util.CommandLine(items)
         command = self[items.cmd]
         command.run(client, *items[1:])
 

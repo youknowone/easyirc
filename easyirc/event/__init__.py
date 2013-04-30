@@ -1,5 +1,5 @@
 
-from . import util
+from .. import util
 
 class EventManager(object):
     def __init__(self, handlers=None):
@@ -16,6 +16,11 @@ class EventManager(object):
     def hook(self, handler):
         if not isinstance(handler, BaseHandler):
             handler = BaseHandler(handler)
+        self.handlers.append(handler)
+        return handler
+
+    def hookglobal(self, job):
+        handler = OnepassHandler(job)
         self.handlers.append(handler)
         return handler
 
@@ -107,15 +112,16 @@ class MessageHandler(ConditionalHandler):
     NOTE: Multiple command handler works - if message is not consumed.
     """
     def __init__(self, msgtype, job):
-        self.messagetype = msgtype.lower()
+        self.messagetype = msgtype
         def condition(client, message):
             if not isinstance(message, unicode):
                 return False
-            return util.cmdsplit(message).cmd.lower() == self.messagetype
+            return util.msgsplit(message).type == self.messagetype
         ConditionalHandler.__init__(self, condition, job)
 
     def job(self, client, message):
-        return self.job_func(client, *util.cmdsplit(message)[1:])
+        msgline = util.msgsplit(message)
+        return self.job_func(client, msgline.sender, *util.msgsplit(message)[2:])
 
     def __repr__(self):
         return u'<MessageHandler({},{})>'.format(self.messagetype, self.job_func)

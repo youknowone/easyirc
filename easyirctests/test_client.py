@@ -34,11 +34,11 @@ def test_dispatch(SocketType):
             time.sleep(0.1)
             msg = client.dispatch()
             if msg is None: continue
-            parts = util.cmdsplit(msg)
-            if parts.cmd == PING:
+            parts = util.msgsplit(msg)
+            if parts.type == PING:
                 client.pong(parts[1])
                 continue
-            if parts.cmd == themsg:
+            if parts.type == themsg:
                 break
             else:
                 print msg
@@ -64,7 +64,7 @@ def test_callback(SocketType):
     print SocketType
 
     def callback(client, m):
-        ps = util.cmdsplit(m)
+        ps = util.msgsplit(m)
         chan = connop['autojoins'][0]
         if m == CREATED:
             client.socket = test_create(SocketType)
@@ -72,14 +72,14 @@ def test_callback(SocketType):
         elif m == CONNECTED:
             client.nick(connop['nick'])
             client.user(connop['nick'], 'Bot by EasyIRC')
-        elif ps.cmd == PING:
+        elif ps.type == PING:
             client.pong(ps[1])
-        elif ps.cmd == '375':
+        elif ps.type == '375':
             client.join(chan)
-        elif ps.cmd == JOIN:
+        elif ps.type == JOIN:
             client.privmsg(chan, u'test the 콜백')
             client.quit(u'전 이만 갑니다')
-        elif ps.cmd == 'ERROR':
+        elif ps.type == 'ERROR':
             print 'END!'
             client.disconnect()
         else:
@@ -93,35 +93,35 @@ def test_callback(SocketType):
 event = EventManager()
 chan = connop['autojoins'][0]
 @event.hookmsg(CREATED)
-def created(client):
+def created(client, sender):
     print 'created?', client
     client.socket = event.socket
     client.connect()
 
 @event.hookmsg(CONNECTED)
-def connected(client):
+def connected(client, sender):
     print 'connected?', client
     client.nick(connop['nick'])
     client.user(connop['nick'], 'Bot by EasyIRC')
 
 @event.hookmsg(PING)
-def ping(client, tag):
+def ping(client, sender, tag):
     print 'ping? pong!', client
     client.pong(tag)
 
 @event.hookmsg('375')
-def msgofday(client, *args):
+def msgofday(client, sender, *args):
     print 'message of the day!', client
     client.join(chan)
 
 @event.hookmsg(JOIN)
-def join(client, *args):
+def join(client, sender, *args):
     print 'joined?', client
     client.privmsg(chan, u'test the 이벤트훅')
     client.quit(u'전 이만 갑니다')
 
 @event.hookmsg('ERROR')
-def error(client, *args):
+def error(client, sender, *args):
     print 'error?!', client
     client.disconnect()
 
@@ -144,9 +144,9 @@ def test_eventhook(SocketType):
 
 
 if __name__ == '__main__':
-    #test_dispatch(socktypes[0][0])
+    test_dispatch(socktypes[0][0])
     #test_dispatch(socktypes[1][0])
-    #test_callback(socktypes[0][0])
+    test_callback(socktypes[0][0])
     #test_callback(socktypes[1][0])
     test_eventhook(socktypes[0][0])
-    test_eventhook(socktypes[1][0])
+    #test_eventhook(socktypes[1][0])
