@@ -28,16 +28,22 @@ class BaseClient(object):
         self.cmdmanager = cmdmanager
         self.options = options
         self.socket = none_socket
+        self.pseudo_msgqueue = []
 
     def runloop_unit(self):
         raise NotImplementedError
 
+    def enqueue(self, msg):
+        self.pseudo_msgqueue.append(msg)
+
     def dispatch(self):
         """Get a message from socket."""
+        if len(self.pseudo_msgqueue):
+            return self.pseudo_msgqueue.pop()
         return self.socket.dispatch()
 
     def handle_message(self):
-        message = self.socket.dispatch()
+        message = self.dispatch()
         if message is None:
             return None
         self.eventmanager.putln(self, message)
