@@ -12,8 +12,7 @@ class CommandManager(dict):
         self.run(client, *items)
 
     def run(self, client, *items):
-        if not isinstance(items, util.CommandLine):
-            items = util.CommandLine(items)
+        items = util.CommandLine(items)
         command = self[items.cmd]
         command.run(client, *items[1:])
 
@@ -25,14 +24,14 @@ class CommandManager(dict):
             parent = None
         else:
             parent = self[name]
-        command.parent = parent
+        command.super = parent
         self[name] = command
 
     def disinherit(self, name, strict=True):
         """Works like 'pop'."""
-        parent = self[name].parent
+        parent = self[name].super
         if parent:
-            self[name] = self[name].parent
+            self[name] = parent
         else:
             if strict:
                 raise KeyError(name)
@@ -64,8 +63,9 @@ class CommandManager(dict):
 
 
 class BaseCommand(object):
-    def __init__(self):
-        self.super = None
+    def __init__(self, super=None, category=None):
+        self.super = super
+        self.category = category
 
     def run(self, manager, *items):
         """Implement to define a command."""
@@ -73,9 +73,8 @@ class BaseCommand(object):
 
 
 class FunctionCommand(BaseCommand):
-    def __init__(self, action, super=None):
-        BaseCommand.__init__(self)
-        self.super = super
+    def __init__(self, action, super=None, category=None):
+        BaseCommand.__init__(self, super, category)
         self.action = action
 
     def run(self, manager, *items):

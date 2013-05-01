@@ -54,3 +54,6 @@ def privmsg(client, target, msg):
 def notice(client, target, msg):
     client.sendl(PRIVMSG, target, msg)
 
+
+for command in manager.values():
+    command.category = 'protocol'

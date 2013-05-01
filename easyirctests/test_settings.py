@@ -5,7 +5,7 @@ import settings
 settings = load(settings)
 
 def test_settings():
-    conn = settings.connections[0]
+    conn = settings.connections.values()[0]
     conn.name
     conn.host
     conn.port
