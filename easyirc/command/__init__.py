@@ -16,6 +16,12 @@ class CommandManager(dict):
         command = self[items.cmd]
         command.run(client, *items[1:])
 
+    def merge(self, manager, override=False):
+        for cmd, action in manager.iteritems():
+            if not override and cmd in self:
+                continue
+            self[cmd] = action
+
     def inherit(self, name, command, strict=True):
         """Works like 'push', but parent is accessible."""
         if name not in self:
@@ -50,7 +56,7 @@ class CommandManager(dict):
             raise TypeError
         return command
 
-    def inherit(self, command):
+    def override(self, command):
         if isinstance(command, BaseCommand):
             self.inherit(command.__name__, command, strict=True)
         elif callable(command):
