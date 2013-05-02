@@ -11,6 +11,7 @@ QUIT = u'QUIT'
 PRIVMSG = u'PRIVMSG'
 NOTICE = u'NOTICE'
 MODE = u'MODE'
+INVITE = u'INVITE'
 
 # Pseudo-messages
 ## socket level

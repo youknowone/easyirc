@@ -23,7 +23,7 @@ def on_welcome(client, *args):
     client.enqueue(LOADED)
 
 @manager.hookmsg(JOIN)
-def join(client, sender, channel):
+def on_join(client, sender, channel):
     if not channel in client.channels:
         client.channels.add(Channel(channel))
 

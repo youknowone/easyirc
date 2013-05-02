@@ -80,3 +80,20 @@ class Connection(object):
         except KeyError:
             return self.username
 
+    @property
+    def admin(self):
+        try:
+            return self.opt['admin']
+        except KeyError:
+            return None
+
+    def is_admin(self, ident):
+        """Used to check mask, in future."""
+        return ident == self.admin or ident == self.admin.split('!')[0]
+
+    @property
+    def invite(self):
+        try:
+            return self.opt['invite']
+        except KeyError:
+            return 'disallow'
