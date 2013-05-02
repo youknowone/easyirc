@@ -1,5 +1,5 @@
 
-from easyirc.client import BaseClient
+from easyirc.connection import BaseConnection
 from mocksocket import Socket
 
 class MockCommandSocket(Socket):
@@ -10,9 +10,9 @@ class MockCommandSocket(Socket):
         self.sends.append(line)
 
 
-class MockCommandClient(BaseClient):
+class MockCommandConnection(BaseConnection):
     def __init__(self, eventmanager, cmdmanager):
-        BaseClient.__init__(self, eventmanager, cmdmanager)
+        BaseConnection.__init__(self, eventmanager, cmdmanager)
 
         self.cmdbuffer = []
         self.socket = MockCommandSocket()

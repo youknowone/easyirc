@@ -7,14 +7,14 @@ class CommandManager(dict):
 
         self['run'] = self # trick!
 
-    def runln(self, client, command):
+    def runln(self, connection, command):
         items = util.cmdsplit(command)
-        self.run(client, *items)
+        self.run(connection, *items)
 
-    def run(self, client, *items):
+    def run(self, connection, *items):
         items = util.CommandLine(items)
         command = self[items.cmd]
-        command.run(client, *items[1:])
+        command.run(connection, *items[1:])
 
     def merge(self, manager, override=False):
         for cmd, action in manager.iteritems():

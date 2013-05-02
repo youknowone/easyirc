@@ -5,12 +5,17 @@ class EventManager(object):
     def __init__(self, handlers=None):
         self.handlers = handlers if handlers is not None else []
 
-    def putln(self, client, message):
+    def putln(self, connection, message):
         # It is reversed to grant higher priority to new hook
         for handler in reversed(self.handlers):
-            consumed = handler.run(client, message)
+            consumed = handler.run(connection, message)
             if consumed:
                 break
+
+    def extends(self, events):
+        if isinstance(events, EventManager):
+            events = events.handlers
+        self.handlers += events
 
     # decorators
     def hook(self, handler):
@@ -53,7 +58,7 @@ class BaseHandler(object):
     Consumed message will not pass other handlers.
     Inherit to implement handlers.
     """
-    def run(self, client, message):
+    def run(self, connection, message):
         raise NotImplementedError
         return False # notify handler didn't consume the message
 
@@ -65,8 +70,8 @@ class OnepassHandler(BaseHandler):
     def __init__(self, action):
         self.action = action
 
-    def run(self, client, message):
-        return self.action(client, message)
+    def run(self, connection, message):
+        return self.action(connection, message)
 
 
 class ConditionalHandler(BaseHandler):
@@ -77,18 +82,18 @@ class ConditionalHandler(BaseHandler):
         self.condition_func = condition
         self.job_func = action
 
-    def condition(self, client, message):
+    def condition(self, connection, message):
         """Override to ignore given condition"""
-        return self.condition_func(client, message)
+        return self.condition_func(connection, message)
 
-    def job(self, client, message):
+    def job(self, connection, message):
         """Override to ignore given job"""
-        return self.job_func(client, message)
+        return self.job_func(connection, message)
 
-    def run(self, client, message):
-        if not self.condition(client, message):
+    def run(self, connection, message):
+        if not self.condition(connection, message):
             return False
-        return self.job(client, message)
+        return self.job(connection, message)
 
 
 class ExceptionHandler(ConditionalHandler):
@@ -98,7 +103,7 @@ class ExceptionHandler(ConditionalHandler):
     """
     def __init__(self, exception, action):
         self.exception = exception
-        def condition(client, message):
+        def condition(connection, message):
             return isinstance(message, self.exception)
         ConditionalHandler.__init__(self, condition, action)
 
@@ -113,15 +118,15 @@ class MessageHandler(ConditionalHandler):
     """
     def __init__(self, msgtype, job):
         self.messagetype = msgtype
-        def condition(client, message):
+        def condition(connection, message):
             if not isinstance(message, unicode):
                 return False
             return util.msgsplit(message).type == self.messagetype
         ConditionalHandler.__init__(self, condition, job)
 
-    def job(self, client, message):
+    def job(self, connection, message):
         msgline = util.msgsplit(message)
-        return self.job_func(client, msgline.sender, *util.msgsplit(message)[2:])
+        return self.job_func(connection, msgline.sender, *util.msgsplit(message)[2:])
 
     def __repr__(self):
         return u'<MessageHandler({},{})>'.format(self.messagetype, self.job_func)

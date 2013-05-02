@@ -6,23 +6,27 @@ manager = CommandManager()
 manager.merge(protocol_manager)
 
 @manager.command
-def switch(client, chan):
-    client.channel = chan
+def switch(connection, chan):
+    connection.channel = chan
 
 @manager.override
-def join(client, super, chan):
-    super.run(client, chan)
-    switch.run(client, chan)
+def join(connection, super, chan):
+    super.run(connection, chan)
+    switch.run(connection, chan)
 
 @manager.override
-def part(client, super, chan, reason=None):
-    switch(client, None)
-    super.run(client, chan, reason)
+def part(connection, super, chan, reason=None):
+    switch(connection, None)
+    super.run(connection, chan, reason)
 
 @manager.override
-def privmsg(client, super, msg):
-    super.run(client, client.channel, msg)
+def privmsg(connection, super, chan, msg=None):
+    if msg is None:
+        chan, msg = connection.channel, chan
+    super.run(connection, chan, msg)
 
 @manager.override
-def notice(client, super, msg):
-    super.run(client, client.channel, msg)
+def notice(connection, super, msg):
+    if msg is None:
+        chan, msg = connection.channel, chan
+    super.run(connection, chan, msg)

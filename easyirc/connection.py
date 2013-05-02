@@ -16,9 +16,9 @@ class NoneSocket(BaseSocket):
         return CREATED
 none_socket = NoneSocket(None)
 
-class BaseClient(object):
-    """Command IRC client interface.
-    Any client should support:
+class BaseConnection(object):
+    """Command IRC connection interface.
+    Any connection should support:
         self.socket: any ircsocket
         self.cmdmanager: command dictionary
     """
@@ -98,15 +98,15 @@ class BaseClient(object):
             return self.__getattribute__(key)
 
 
-class DispatchClient(BaseClient):
-    """Client implementation based on manual dispatching."""
+class DispatchConnection(BaseConnection):
+    """Connection implementation based on manual dispatching."""
 
     def runloop_unit(self):
         """NOTE: blocking"""
         self.socket.recv()
 
 
-class EventHookClient(BaseClient):
+class EventHookConnection(BaseConnection):
     def runloop_unit(self):
         """NOTE: blocking"""
         msg = self.handle_message()
@@ -114,13 +114,13 @@ class EventHookClient(BaseClient):
             self.socket.recv()
 
 
-class CallbackClient(BaseClient):
-    """Callback-driven IRC client"""
+class CallbackConnection(BaseConnection):
+    """Callback-driven IRC connection"""
 
     def __init__(self, callback, cmdmanager, options=None):
         self.callback = callback
 
-        BaseClient.__init__(self, None, cmdmanager, options=None)
+        BaseConnection.__init__(self, None, cmdmanager, options=None)
 
     def runloop_unit(self):
         """NOTE: blocking"""

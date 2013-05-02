@@ -1,12 +1,12 @@
 
 import pytest
 
-from mockclient import MockCommandClient
+from mockconnection import MockCommandConnection
 from easyirc.command import protocol
 
 from mocksocket import *
 
-client = MockCommandClient(None, protocol.manager)
+connection = MockCommandConnection(None, protocol.manager)
 
 @pytest.mark.parametrize(['line', 'result'], [
     [u'ping test', u'PING test'],
@@ -15,8 +15,8 @@ client = MockCommandClient(None, protocol.manager)
     [u'part #channel', u'PART #channel'],
 ])
 def test_cmdln(line, result):
-    client.cmdln(line)
-    pop = client.socket.sends.pop()
+    connection.cmdln(line)
+    pop = connection.socket.sends.pop()
     assert pop == result + u'\r\n'
 
 @pytest.mark.parametrize(['items', 'result'], [
@@ -26,8 +26,8 @@ def test_cmdln(line, result):
     [(u'part', u'#channel'), u'PART #channel'],
 ])
 def test_cmd(items, result):
-    client.cmd(*items)
-    pop = client.socket.sends.pop()
+    connection.cmd(*items)
+    pop = connection.socket.sends.pop()
     assert pop == result + u'\r\n'
 
 

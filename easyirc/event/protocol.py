@@ -6,24 +6,24 @@ from ..model import DataDict, Channel, User
 manager = EventManager()
 
 @manager.hookmsg(PING)
-def on_ping(client, sender, tag):
-    client.pong(tag)
+def on_ping(connection, sender, tag):
+    connection.pong(tag)
 
 @manager.hookmsg(CONNECTED)
-def on_connected(client, sender):
-    client.welcome = u''
-    client.identifier = u''
-    client.loaded = False
-    client.channels = DataDict()
+def on_connected(connection, sender):
+    connection.welcome = u''
+    connection.identifier = u''
+    connection.loaded = False
+    connection.channels = DataDict()
 
 @manager.hookmsg(RPL_WELCOME)
-def on_welcome(client, *args):
+def on_welcome(connection, *args):
     welcome = args[-1]
-    client.identifier = welcome.rsplit(' ', 1)[-1]
-    client.enqueue(LOADED)
+    connection.identifier = welcome.rsplit(' ', 1)[-1]
+    connection.enqueue(LOADED)
 
 @manager.hookmsg(JOIN)
-def on_join(client, sender, channel):
-    if not channel in client.channels:
-        client.channels.add(Channel(channel))
+def on_join(connection, sender, channel):
+    if not channel in connection.channels:
+        connection.channels.add(Channel(channel))
 

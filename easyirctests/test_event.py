@@ -7,33 +7,33 @@ from easyirc.const import *
 from easyirc.event import EventManager, BaseHandler, ConditionalHandler, ExceptionHandler, MessageHandler
 
 class PingHandler(BaseHandler):
-    def run(self, client, message):
+    def run(self, connection, message):
         if not isinstance(message, unicode):
             return False
         items = util.cmdsplit(message)
         if items.cmd == PING:
-            client.cmd(PONG, items[1])
+            connection.cmd(PONG, items[1])
             return True
         return False
 
 
 ping_base = PingHandler()
 
-def cond_conditional(client, message):
+def cond_conditional(connection, message):
     if not isinstance(message, unicode):
         return False
     items = util.cmdsplit(message)
     return items.cmd == PING
 
-def pong_conditional(client, message):
+def pong_conditional(connection, message):
     items = util.cmdsplit(message)
-    client.cmd(PONG, items[1])
+    connection.cmd(PONG, items[1])
     return True
 
 ping_conditional = ConditionalHandler(cond_conditional, pong_conditional)
 
-def pong_message(client, sender, message):
-    client.cmd(PONG, message)
+def pong_message(connection, sender, message):
+    connection.cmd(PONG, message)
     return True
 
 ping_message = MessageHandler(PING, pong_message)
@@ -45,13 +45,13 @@ ping_message = MessageHandler(PING, pong_message)
     [ping_message, u'()@#RJIOEW'],
 ])
 def test_hook(hook, ping):
-    class Client(object):
+    class Connection(object):
         def __init__(self):
             self.pong = False
         def cmd(self, *args):
             self.pong = args[1]
 
-    client = Client()
-    consumed = hook.run(client, 'PING :' + ping)
+    connection = Connection()
+    consumed = hook.run(connection, 'PING :' + ping)
     assert True == consumed
-    assert client.pong == ping
+    assert connection.pong == ping
