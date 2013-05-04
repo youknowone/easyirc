@@ -43,8 +43,18 @@ class Connection(object):
         self.opt = optdict
 
     @property
+    def enabled(self):
+        try:
+            return self.opt['enabled']
+        except KeyError:
+            return True
+
+    @property
     def name(self):
-        return self.opt['name']
+        try:
+            return self.opt['name']
+        except KeyError:
+            return self.host
 
     @property
     def host(self):
