@@ -3,6 +3,13 @@ from . import CommandManager
 
 manager = CommandManager()
 
+@manager.override
+def run(client, super, *args):
+    try:
+        super(client, *args)
+    except KeyError:
+        client.connection.cmd(*args)
+
 @manager.command
 def start(client):
     for connection in client.values():
@@ -12,7 +19,7 @@ def start(client):
 def list(client):
     client.println('connections:', *client.keys())
     if client.connection:
-        client.connection.list(client.connection)
+        client.connection.list()
 
 @manager.command
 def switch(client, target):

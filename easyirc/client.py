@@ -50,7 +50,7 @@ class BasicClient(DataDict):
         for connopt in settings.connections.values():
             if not connopt.enabled:
                 continue
-            connection = EventHookConnection(events, commands)
+            connection = EventHookConnection(events, self.connection_cmdmanager)
             connection.name = connopt.name
             connection.client = self
             self.add(connection)
@@ -68,25 +68,13 @@ class BasicClient(DataDict):
         self.cmd(*items)
 
     def cmd(self, *items):
-        if items[0] in self.cmdmanager:
-            self.cmdmanager.run(self, *items)
-        elif self.connection is not None:
-            connection = self.connection
-            connection.cmdmanager.run(connection, *items)
-        else:
-            raise KeyError(items[0])
+        self.cmdmanager(self, *items)
 
     def __getattr__(self, key):
         """Borrow commands from command manager."""
         cmdmanager = self.__getattribute__('cmdmanager')
         if key in cmdmanager:
-            action = cmdmanager[key].run
-            def call(*args):
-                return action(self, *args)
-            return call
-        connection = self.__getattribute__('connection')
-        if connection is not None and key in connection.cmdmanager:
-            action = connection.cmdmanager[key].run
+            action = cmdmanager[key]
             def call(*args):
                 return action(self, *args)
             return call
@@ -110,7 +98,7 @@ class BasicClient(DataDict):
                     cmdln = line[1:]
                     self.raw(cmdln)
                 else:
-                    self.privmsg(line)
+                    self.cmd('privmsg', line)
             except KeyboardInterrupt:
                 break
             except Exception as e:

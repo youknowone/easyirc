@@ -71,7 +71,7 @@ class BaseConnection(object):
         self.cmd(*items)
 
     def cmd(self, *items):
-        self.cmdmanager.run(self, *items)
+        self.cmdmanager(self, *items)
 
     def sendraw(self, line, *args, **kwargs):
         self.socket.sendln(line, *args, **kwargs)
@@ -88,7 +88,7 @@ class BaseConnection(object):
     def __getattr__(self, key):
         """Borrow commands from command manager."""
         if key in self.cmdmanager:
-            action = self.cmdmanager[key].run
+            action = self.cmdmanager[key]
             def call(*args):
                 return action(self, *args)
             return call

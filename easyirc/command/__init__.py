@@ -8,14 +8,14 @@ class CommandManager(dict):
         def run(sender, *items):
             items = util.CommandLine(items)
             command = self[items.cmd]
-            command.run(sender, *items[1:])
+            command(sender, *items[1:])
         self['run'] = run # trick!
 
     def runln(self, connection, command):
         items = util.cmdsplit(command)
         self.run(connection, *items)
 
-    def run(self, sender, *items):
+    def __call__(self, sender, *items):
         return self['run'](sender, *items)
 
     def merge(self, manager, override=False):
@@ -75,7 +75,7 @@ class BaseCommand(object):
         self.super = super
         self.category = category
 
-    def run(self, manager, *items):
+    def __call__(self, manager, *items):
         """Implement to define a command."""
         raise NotImplementedError
 
@@ -85,11 +85,11 @@ class FunctionCommand(BaseCommand):
         BaseCommand.__init__(self, super, category)
         self.action = action
 
-    def run(self, manager, *items):
+    def __call__(self, manager, *items):
         return self.action(manager, self.super, *items)
 
 
 class SoleFunctionCommand(FunctionCommand):
-    def run(self, manager, *items):
+    def __call__(self, manager, *items):
         return self.action(manager, *items)
 
