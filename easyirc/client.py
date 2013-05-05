@@ -34,6 +34,14 @@ def on_connected(connection, sender):
     connection.nick(connopt.nick)
     connection.user(connopt.username, connopt.realname)
 
+@events.hookmsg(ERR_NICKNAMEINUSE, ERR_NICKCOLLISION)
+def on_nickerror(connection, *args):
+    if not connection.identifier:
+        # initial failure
+        connopt = settings.connections[connection.name]
+        connection.nick(connection.tried_nick + '_')
+        connection.user(connopt.username, connopt.realname)
+
 @events.hookmsg(LOADED)
 def on_loaded(connection, *args):
     connopt = settings.connections[connection.name]
