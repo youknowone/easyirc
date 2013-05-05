@@ -5,16 +5,18 @@ class CommandManager(dict):
     def __init__(self, **kwargs):
         dict.__init__(self, **kwargs) # useful? useless?
 
-        self['run'] = self # trick!
+        def run(sender, *items):
+            items = util.CommandLine(items)
+            command = self[items.cmd]
+            command.run(sender, *items[1:])
+        self['run'] = run # trick!
 
     def runln(self, connection, command):
         items = util.cmdsplit(command)
         self.run(connection, *items)
 
-    def run(self, connection, *items):
-        items = util.CommandLine(items)
-        command = self[items.cmd]
-        command.run(connection, *items[1:])
+    def run(self, sender, *items):
+        return self['run'](sender, *items)
 
     def merge(self, manager, override=False):
         for cmd, action in manager.iteritems():

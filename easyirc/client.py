@@ -47,7 +47,6 @@ class BasicClient(DataDict):
 
         self.cmdmanager = client_cmdmanager
         self.connection_cmdmanager = cmdmanager
-        self.selected_connection = None
         for connopt in settings.connections.values():
             if not connopt.enabled:
                 continue
@@ -56,9 +55,13 @@ class BasicClient(DataDict):
             connection.client = self
             self.add(connection)
 
-    def start(self):
-        for connection in self.values():
-            connection.start()
+    @property
+    def settings(self):
+        return settings
+
+    @property
+    def connections(self):
+        return self.values()
 
     def cmdln(self, command):
         items = util.cmdsplit(command)
@@ -67,11 +70,11 @@ class BasicClient(DataDict):
     def cmd(self, *items):
         if items[0] in self.cmdmanager:
             self.cmdmanager.run(self, *items)
-        elif self.selected_connection is not None:
-            connection = self.selected_connection
+        elif self.connection is not None:
+            connection = self.connection
             connection.cmdmanager.run(connection, *items)
         else:
-            raise KeyError[items[0]]
+            raise KeyError(items[0])
 
     def __getattr__(self, key):
         """Borrow commands from command manager."""
@@ -81,7 +84,7 @@ class BasicClient(DataDict):
             def call(*args):
                 return action(self, *args)
             return call
-        connection = self.__getattribute__('selected_connection')
+        connection = self.__getattribute__('connection')
         if connection is not None and key in connection.cmdmanager:
             action = connection.cmdmanager[key].run
             def call(*args):

@@ -4,12 +4,22 @@ from . import CommandManager
 manager = CommandManager()
 
 @manager.command
-def connectionlist(client):
-    client.println(*client.keys())
+def start(client):
+    for connection in client.values():
+        connection.start()
 
 @manager.command
-def connectionswitch(client, server):
-    client.selected_connection = client[server]
+def list(client):
+    client.println('connections:', *client.keys())
+    if client.connection:
+        client.connection.list(client.connection)
+
+@manager.command
+def switch(client, target):
+    if target in client:
+        client.connection = client[target]
+    else:
+        client.connection.switch(target)
 
 @manager.command
 def quitall(client, message=None):
@@ -18,4 +28,4 @@ def quitall(client, message=None):
 
 @manager.command
 def println(client, *args):
-    print args
+    print ' '.join(map(str, args))
