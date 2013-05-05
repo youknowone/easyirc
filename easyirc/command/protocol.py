@@ -14,6 +14,7 @@ def raw(connection, line):
 
 @manager.command
 def nick(connection, nick):
+    connection.tried_nick = nick
     connection.sends(NICK, nick)
 
 @manager.command

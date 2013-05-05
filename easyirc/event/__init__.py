@@ -43,9 +43,9 @@ class EventManager(object):
             return handler
         return decorator
 
-    def hookmsg(self, message):
+    def hookmsg(self, *messages):
         def decorator(job):
-            handler = MessageHandler(message, job)
+            handler = MessageHandler(messages, job)
             self.handlers.append(handler)
             return handler
         return decorator
@@ -116,12 +116,14 @@ class MessageHandler(ConditionalHandler):
     Pass command and job callback to create a handler.
     NOTE: Multiple command handler works - if message is not consumed.
     """
-    def __init__(self, msgtype, job):
-        self.messagetype = msgtype
+    def __init__(self, msgtypes, job):
+        if isinstance(msgtypes, unicode):
+            msgtypes = [msgtypes]
+        self.types = msgtypes
         def condition(connection, message):
             if not isinstance(message, unicode):
                 return False
-            return util.msgsplit(message).type == self.messagetype
+            return util.msgsplit(message).type in self.types
         ConditionalHandler.__init__(self, condition, job)
 
     def job(self, connection, message):
@@ -129,5 +131,5 @@ class MessageHandler(ConditionalHandler):
         return self.job_func(connection, msgline.sender, *util.msgsplit(message)[2:])
 
     def __repr__(self):
-        return u'<MessageHandler({},{})>'.format(self.messagetype, self.job_func)
+        return u'<MessageHandler({},{})>'.format(self.types, self.job_func)
 

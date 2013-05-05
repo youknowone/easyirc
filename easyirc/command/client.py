@@ -11,6 +11,10 @@ def run(client, super, *args):
         client.connection.cmd(*args)
 
 @manager.command
+def println(client, *args):
+    print ' '.join(map(str, args))
+
+@manager.command
 def start(client):
     for connection in client.values():
         connection.start()
@@ -29,10 +33,33 @@ def switch(client, target):
         client.connection.switch(target)
 
 @manager.command
-def quitall(client, message=None):
-    for connection in client.values():
+def quit(client, message=None):
+    for connection in client.connections:
         connection.quit(message)
 
 @manager.command
-def println(client, *args):
-    print ' '.join(map(str, args))
+def disconnect(client):
+    for connection in client.connections:
+        connection.disconnect(message)
+
+@manager.command
+def privmsg(client, connection, channel=None, message=None):
+    if channel is None and message is None:
+        message = connection
+        client.connection.privmsg(message)
+    elif message is None:
+        channel, message = connection, channel
+        client.connection.privmsg(channel, message)
+    else:
+        client[connection].privmsg(channel, message)
+
+@manager.command
+def notice(client, connection, channel=None, message=None):
+    if channel is None and message is None:
+        message = connection
+        client.connection.notice(message)
+    elif message is None:
+        channel, message = connection, channel
+        client.connection.notice(channel, message)
+    else:
+        client[connection].notice(channel, message)

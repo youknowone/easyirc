@@ -50,15 +50,16 @@ def on_loaded(connection, *args):
 
 
 class BasicClient(DataDict):
-    def __init__(self, cmdmanager=commands, client_cmdmanager=client_commands):
+    def __init__(self, events=events, cmdmanager=commands, client_cmdmanager=client_commands):
         DataDict.__init__(self)
 
         self.cmdmanager = client_cmdmanager
         self.connection_cmdmanager = cmdmanager
+        self.events = events
         for connopt in settings.connections.values():
             if not connopt.enabled:
                 continue
-            connection = EventHookConnection(events, self.connection_cmdmanager)
+            connection = EventHookConnection(self.events, self.connection_cmdmanager)
             connection.name = connopt.name
             connection.client = self
             self.add(connection)
@@ -106,7 +107,7 @@ class BasicClient(DataDict):
                     cmdln = line[1:]
                     self.raw(cmdln)
                 else:
-                    self.cmd('privmsg', line)
+                    self.privmsg(line)
             except KeyboardInterrupt:
                 break
             except Exception as e:
