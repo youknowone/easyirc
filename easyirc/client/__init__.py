@@ -1,61 +1,28 @@
 
 # -*- coding: utf-8 -*-
 import traceback
-from . import util
-from .const import *
-from .model import DataDict
-from .connection import EventHookConnection
-from .socket import Socket
-from .event import EventManager
-from .command import CommandManager
-from .command.client import manager as client_commands
-from .command.interactive import manager as commands
-from .event.protocol import manager as protocol_events
+from .. import util
+from ..const import *
+from ..model import DataDict
+from ..connection import EventHookConnection
+from ..socket import Socket
+from ..event import EventManager
+from ..command import CommandManager
+from ..command.client import manager as client_commands
+from ..command.interactive import manager as commands
+from ..event.protocol import manager as protocol_events
 
-from . import settings
-
-events = EventManager()
-events.extends(protocol_events)
-
-if settings.RAW_LOG:
-    @events.hookglobal
-    def log(connection, message):
-        print '<', message
-
-@events.hookmsg(CREATED)
-def on_create(connection, sender):
-    connopt = settings.connections[connection.name]
-    connection.socket = Socket(connopt.addr)
-    connection.connect()
-
-@events.hookmsg(CONNECTED)
-def on_connected(connection, sender):
-    connopt = settings.connections[connection.name]
-    connection.nick(connopt.nick)
-    connection.user(connopt.username, connopt.realname)
-
-@events.hookmsg(ERR_NICKNAMEINUSE, ERR_NICKCOLLISION)
-def on_nickerror(connection, *args):
-    if not connection.identifier:
-        # initial failure
-        connopt = settings.connections[connection.name]
-        connection.nick(connection.tried_nick + '_')
-        connection.user(connopt.username, connopt.realname)
-
-@events.hookmsg(LOADED)
-def on_loaded(connection, *args):
-    connopt = settings.connections[connection.name]
-    for autojoin in connopt.autojoins:
-        connection.join(autojoin)
+from .. import settings
 
 
 class BasicClient(DataDict):
-    def __init__(self, events=events, cmdmanager=commands, client_cmdmanager=client_commands):
+    """Basic client implementation, heavily depends on settings."""
+    def __init__(self, events=None, cmdmanager=commands, client_cmdmanager=client_commands):
         DataDict.__init__(self)
 
         self.cmdmanager = client_cmdmanager
         self.connection_cmdmanager = cmdmanager
-        self.events = events
+        self.events = events if events else self._events
         for connopt in settings.connections.values():
             if not connopt.enabled:
                 continue
@@ -63,9 +30,11 @@ class BasicClient(DataDict):
             connection.name = connopt.name
             connection.client = self
             self.add(connection)
+            self.connection = connection
 
     @property
     def settings(self):
+        """Alias of settings just to avoid import. Good or bad idea?"""
         return settings
 
     @property
@@ -112,3 +81,34 @@ class BasicClient(DataDict):
                 break
             except Exception as e:
                 traceback.print_exc()
+
+
+BasicClient._events = _e = EventManager()
+BasicClient._events.extends(protocol_events)
+
+@_e.hookmsg(CREATED)
+def on_create(connection, sender):
+    connopt = settings.connections[connection.name]
+    connection.socket = Socket(connopt.addr)
+    connection.connect()
+
+@_e.hookmsg(CONNECTED)
+def on_connected(connection, sender):
+    connopt = settings.connections[connection.name]
+    connection.nick(connopt.nick)
+    connection.user(connopt.username, connopt.realname)
+
+@_e.hookmsg(ERR_NICKNAMEINUSE, ERR_NICKCOLLISION)
+def on_nickerror(connection, *args):
+    if not connection.identifier:
+        # initial failure
+        connopt = settings.connections[connection.name]
+        connection.nick(connection.tried_nick + '_')
+        connection.user(connopt.username, connopt.realname)
+
+@_e.hookmsg(LOADED)
+def on_loaded(connection, *args):
+    connopt = settings.connections[connection.name]
+    for autojoin in connopt.autojoins:
+        connection.join(autojoin)
+
