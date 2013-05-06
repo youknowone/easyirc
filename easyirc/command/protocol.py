@@ -42,6 +42,7 @@ def part(connection, chan, reason=None):
 
 @manager.command
 def quit(connection, reason=None):
+    connection.quiting = True
     if reason:
         connection.sendl(QUIT, reason)
     else:

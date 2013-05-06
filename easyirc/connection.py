@@ -29,6 +29,7 @@ class BaseConnection(object):
         self.options = options
         self.socket = none_socket
         self.pseudo_msgqueue = []
+        self.quiting = False
 
     def runloop_unit(self):
         raise NotImplementedError

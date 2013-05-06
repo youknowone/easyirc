@@ -2,6 +2,7 @@
 from ..const import *
 from . import EventManager
 from ..model import DataDict, Channel, User
+from .. import settings
 
 manager = EventManager()
 
@@ -27,3 +28,9 @@ def on_join(connection, sender, channel):
     if not channel in connection.channels:
         connection.channels.add(Channel(channel))
 
+@manager.hookmsg(ERROR)
+def on_error(connection, *args):
+    if connection.quiting:
+        connection.disconnect()
+        return
+    #TODO: implement more
