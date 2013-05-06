@@ -30,6 +30,7 @@ setup(
         'easyirc',
         'easyirc/command',
         'easyirc/event',
+        'easyirc/client',
     ),
     package_data={
         'easyirc': ['version.txt']
