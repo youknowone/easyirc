@@ -6,6 +6,11 @@ import socket
 from . import util, exception
 from .const import *
 
+try:
+    from settings import RAW_LOG
+except ImportError:
+    RAW_LOG = False
+
 class BaseSocket(object):
     def __init__(self, addr, charset='utf-8'):
         """addr is a tuple represents (host, port)"""
@@ -60,6 +65,8 @@ class BaseSocket(object):
            return None
         msg = self.msgqueue[0]
         del(self.msgqueue[0])
+        if RAW_LOG:
+            print '>', msg
         return msg
 
     def dispatch_all(self):
@@ -114,6 +121,8 @@ class BaseSocket(object):
 
 class Socket(BaseSocket):
     def send(self, line):
+        if RAW_LOG:
+            print '<', line,
         self.socket.send(line.encode(self.charset))
 
     def connect(self):
