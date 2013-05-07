@@ -8,7 +8,7 @@ class EventManager(object):
     def putln(self, connection, message):
         # It is reversed to grant higher priority to new hook
         for handler in reversed(self.handlers):
-            consumed = handler.run(connection, message)
+            consumed = handler(connection, message)
             if consumed:
                 break
 
@@ -58,19 +58,19 @@ class BaseHandler(object):
     Consumed message will not pass other handlers.
     Inherit to implement handlers.
     """
-    def run(self, connection, message):
+    def __call__(self, connection, message):
         raise NotImplementedError
         return False # notify handler didn't consume the message
 
 
 class OnepassHandler(BaseHandler):
     """One-pass handler interface.
-    Pass an function. It will acts like BaseHandler.run method.
+    Pass an function. It will acts like BaseHandler.__call__ method.
     """
     def __init__(self, action):
         self.action = action
 
-    def run(self, connection, message):
+    def __call__(self, connection, message):
         return self.action(connection, message)
 
 
@@ -90,7 +90,7 @@ class ConditionalHandler(BaseHandler):
         """Override to ignore given job"""
         return self.job_func(connection, message)
 
-    def run(self, connection, message):
+    def __call__(self, connection, message):
         if not self.condition(connection, message):
             return False
         return self.job(connection, message)
