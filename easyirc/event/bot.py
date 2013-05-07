@@ -1,4 +1,6 @@
 
+from collections import OrderedDict
+
 from ..const import *
 from . import EventManager, BaseHandler
 from ..model import DataDict, Channel, User
@@ -19,7 +21,7 @@ def on_invite(connection, sender, target, channel):
 
 class BaseBotCommandManager(BaseHandler):
     def __init__(self, handlers=None):
-        self.handlers = handlers if handlers is not None else {}
+        self.handlers = handlers if handlers is not None else OrderedDict()
 
     def extends(self, events):
         if isinstance(events, EventManager):
@@ -51,9 +53,13 @@ class PrefixBotCommandManager(BaseBotCommandManager):
         except KeyError:
             return
 
-        action(*([connection] + ln[:-1] + parts))
+        action(*([connection, self] + ln[:-1] + parts))
 
 
 msgprefix = PrefixBotCommandManager('/') # change me!
 manager.hook(msgprefix)
 
+@msgprefix.hook('help')
+def on_help(connection, manager, sender, msgtype, target, prefix, message=None):
+    items = u' '.join(manager.handlers.keys())
+    connection.sendl(msgtype, target, items)
