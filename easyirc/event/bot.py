@@ -1,4 +1,5 @@
 
+import traceback
 from collections import OrderedDict
 
 from ..const import *
@@ -35,6 +36,18 @@ class BaseBotCommandManager(BaseHandler):
             return action
         return decorator
 
+    def hookback(self, pattern):
+        def decorator(action):
+            def on_event(connection, manager, sender, msgtype, target, prefix, message=None):
+                result = action(message)
+                if not result:
+                    return
+                result = unicode(result)
+                connection.sendl(msgtype, target, result)
+            self.handlers[pattern] = on_event
+            return on_event
+        return decorator
+
 
 class PrefixBotCommandManager(BaseBotCommandManager):
     def __init__(self, prefix, handlers=None):
@@ -53,7 +66,10 @@ class PrefixBotCommandManager(BaseBotCommandManager):
         except KeyError:
             return
 
-        action(*([connection, self] + ln[:-1] + parts))
+        try:
+            action(*([connection, self] + ln[:-1] + parts))
+        except:
+            traceback.print_exc()
 
 
 msgprefix = PrefixBotCommandManager('/') # change me!
