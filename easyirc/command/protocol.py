@@ -13,6 +13,14 @@ def raw(connection, line):
     connection.sendraw(line)
 
 @manager.command
+def sendl(connection, *args):
+    connection.sendl(*args)
+
+@manager.command
+def sends(connection, *args):
+    connection.sends(*args)
+
+@manager.command
 def nick(connection, nick):
     connection.tried_nick = nick
     connection.sends(NICK, nick)

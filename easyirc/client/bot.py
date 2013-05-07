@@ -8,3 +8,4 @@ class BotClient(BasicClient):
 BotClient._events = _e = EventManager()
 _e.extends(BasicClient._events)
 _e.extends(bot.manager)
+_e.msgprefix = bot.msgprefix
