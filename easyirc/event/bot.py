@@ -49,7 +49,7 @@ class PrefixBotCommandManager(BaseBotCommandManager):
         try:
             action = self.handlers[prefix]
         except KeyError:
-            pass
+            return
 
         action(*([connection] + ln[:-1] + parts))
 
