@@ -9,17 +9,6 @@ import settings
 
 from mocksocket import *
 
-@pytest.mark.parametrize(['line', 'items'], [
-    [':localhost PING :thepingstring', ['localhost', 'PING', 'thepingstring']],
-    ['PRIVMSG #chan nick :this is the msg', [None, 'PRIVMSG', '#chan', 'nick', 'this is the msg']],
-])
-def test_msgsplit(line, items):
-    splited = util.msgsplit(line)
-    assert splited == items
-
-socktypes = [[MockSocket]]
-if settings.TEST_REALSERVER:
-    socktypes.append([Socket])
 
 @pytest.mark.parametrize(['SocketType'], [
     [Socket],

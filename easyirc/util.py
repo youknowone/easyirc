@@ -6,7 +6,7 @@ class MessageLine(list):
 
     @property
     def nick(self):
-        return self[0].split('@', 1)[0]
+        return self[0].split('!', 1)[0]
 
     @property
     def type(self):
@@ -17,6 +17,20 @@ class CommandLine(list):
     @property
     def cmd(self):
         return self[0]
+
+
+class Identity(str):
+    @property
+    def nick(self):
+        return self.split('!', 1)[0]
+
+    @property
+    def username(self):
+        return self.split('@', 1)[0].split('!', 1)[1]
+
+    @property
+    def host(self):
+        return self.split('@', 1)[1]
 
 
 def decolon(item):
@@ -55,3 +69,5 @@ def cmdsplit(line):
     items.append(decolon(line))
     return items
 
+def parseid(identity):
+    return Identity(identity)
