@@ -35,7 +35,7 @@ def privmsg(connection, super, chan, msg=None):
     super(connection, chan, msg)
 
 @manager.override
-def notice(connection, super, msg):
+def notice(connection, super, chan, msg=None):
     if msg is None:
         chan, msg = connection.channel, chan
     super(connection, chan, msg)

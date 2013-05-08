@@ -62,7 +62,7 @@ def privmsg(connection, target, msg):
 
 @manager.command
 def notice(connection, target, msg):
-    connection.sendl(PRIVMSG, target, msg)
+    connection.sendl(NOTICE, target, msg)
 
 
 for command in manager.values():
