@@ -66,6 +66,11 @@ class PrefixBotCommandManager(BaseBotCommandManager):
         except KeyError:
             return
 
+        sender, target = ln[0], ln[2]
+        if target[0] not in ('#', '&', '%'):
+            target = util.parseid(sender).nick
+        ln[2] = target
+
         try:
             action(*([connection, self] + ln[:-1] + parts))
         except:
