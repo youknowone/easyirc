@@ -3,3 +3,5 @@ local_settings.py
 .env
 *.pyc
 *.egg-info
+dist
+test.json
