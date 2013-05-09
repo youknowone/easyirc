@@ -19,7 +19,7 @@ class CommandLine(list):
         return self[0]
 
 
-class Identity(str):
+class Identity(unicode):
     @property
     def nick(self):
         return self.split('!', 1)[0]
