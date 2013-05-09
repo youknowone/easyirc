@@ -21,6 +21,9 @@ def test_create(SocketType):
     assert sock.dispatch() is None
     return sock
 
+socktypes = [[MockSocket]]
+if settings.TEST_REALSERVER:
+    socktypes.append([Socket])
 @pytest.mark.parametrize(['SocketType'], socktypes)
 def test_enqueue(SocketType):
     print SocketType

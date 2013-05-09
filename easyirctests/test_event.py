@@ -7,7 +7,7 @@ from easyirc.const import *
 from easyirc.event import EventManager, BaseHandler, ConditionalHandler, ExceptionHandler, MessageHandler
 
 class PingHandler(BaseHandler):
-    def run(self, connection, message):
+    def __call__(self, connection, message):
         if not isinstance(message, unicode):
             return False
         items = util.cmdsplit(message)
@@ -52,6 +52,6 @@ def test_hook(hook, ping):
             self.pong = args[1]
 
     connection = Connection()
-    consumed = hook.run(connection, 'PING :' + ping)
+    consumed = hook(connection, 'PING :' + ping)
     assert True == consumed
     assert connection.pong == ping
