@@ -1,4 +1,5 @@
 
+import traceback
 from .. import util
 
 class EventManager(object):
@@ -8,7 +9,10 @@ class EventManager(object):
     def putln(self, connection, message):
         # It is reversed to grant higher priority to new hook
         for handler in reversed(self.handlers):
-            consumed = handler(connection, message)
+            try:
+                consumed = handler(connection, message)
+            except:
+                traceback.print_exc()
             if consumed:
                 break
 
