@@ -1,4 +1,5 @@
 
+import re
 import traceback
 from .. import util
 
@@ -51,6 +52,13 @@ class EventManager(object):
     def hookmsg(self, *messages):
         def decorator(job):
             handler = MessageHandler(messages, job)
+            self.handlers.append(handler)
+            return handler
+        return decorator
+
+    def hookregex(self, regex):
+        def decorator(job):
+            handler = RegexHandler(regex, job)
             self.handlers.append(handler)
             return handler
         return decorator
@@ -137,4 +145,25 @@ class MessageHandler(ConditionalHandler):
 
     def __repr__(self):
         return u'<MessageHandler({},{})>'.format(self.types, self.job_func)
+
+
+class RegexHandler(ConditionalHandler):
+    """Regular Expression handler interface.
+    Pass regex and job callback to create a handler.
+    NOTE: Multiple command handler works - if message is not consumed.
+    """
+    def __init__(self, regex, job):
+        self.regex = regex
+        def condition(connection, message):
+            if not isinstance(message, unicode):
+                return False
+            return re.search(self.regex, message) is not None
+        ConditionalHandler.__init__(self, condition, job)
+
+    def job(self, connection, message):
+        match = re.search(self.regex, message)
+        return self.job_func(connection, *match.groups())
+
+    def __repr__(self):
+        return u'<RegexHandler({},{})>'.format(self.regex, self.job_func)
 

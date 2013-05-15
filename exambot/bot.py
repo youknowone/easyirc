@@ -22,7 +22,7 @@ def on_join(connection, sender, target):
         nicks._commit()
 
 @client.events.msgprefix.hookback('sayback')
-def on_dic(message=None):
+def on_sayback(message=None):
     return message
 
 client.start()
