@@ -82,5 +82,17 @@ manager.hook(msgprefix)
 
 @msgprefix.hook('help')
 def on_help(connection, manager, sender, msgtype, target, prefix, message=None):
-    items = u' '.join(manager.handlers.keys())
-    connection.sendl(msgtype, target, items)
+    """Show help/description of given command"""
+    if message is None:
+        items = u' '.join(manager.handlers.keys())
+        connection.sendl(msgtype, target, items)
+    else:
+        try:
+            handler = manager.handlers[message]
+        except KeyError:
+            connection.sendl(msgtype, target, u'"{}" is not a command'.format(message))
+        if handler.__doc__:
+            connection.sendl(msgtype, target, handler.__doc__.decode('utf-8'))
+        else:
+            connection.sendl(msgtype, target, u'"{}" has no help'.format(message))
+
