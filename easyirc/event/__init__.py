@@ -12,6 +12,7 @@ class EventManager(object):
             try:
                 consumed = handler(connection, message)
             except:
+                consumed = False
                 traceback.print_exc()
             if consumed:
                 break
