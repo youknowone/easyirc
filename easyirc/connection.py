@@ -31,7 +31,7 @@ class BaseConnection(object):
         self.options = options
         self.socket = none_socket
         self.pseudo_msgqueue = []
-        self.quiting = False
+        self.quitting = False
 
     def runloop_unit(self):
         raise NotImplementedError
@@ -68,6 +68,7 @@ class BaseConnection(object):
 
     def disconnect(self):
         self.socket.disconnect()
+        self.socket = none_socket
 
     def cmdln(self, command):
         items = util.cmdsplit(command)
@@ -87,6 +88,11 @@ class BaseConnection(object):
 
     def send(self, *args):
         self.socket.cmd(*args)
+
+    @property
+    def settings(self):
+        from . import settings
+        return settings.connections[self.name]
 
     def __getattr__(self, key):
         """Borrow commands from command manager."""

@@ -1,4 +1,6 @@
 
+import time
+
 from ..const import *
 from . import EventManager
 from ..model import DataDict, Channel, User
@@ -30,7 +32,9 @@ def on_join(connection, sender, channel):
 
 @manager.hookmsg(ERROR)
 def on_error(connection, *args):
-    if connection.quiting:
-        connection.disconnect()
+    connection.disconnect()
+    if connection.quitting:
         return
-    #TODO: implement more
+    if connection.settings.autoreconnect:
+        time.sleep(3)
+        connection.connect()

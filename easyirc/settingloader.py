@@ -107,3 +107,13 @@ class Connection(object):
             return self.opt['invite']
         except KeyError:
             return 'disallow'
+
+    @property
+    def autoreconnect(self):
+        try:
+            return self.opt['autoreconnect']
+        except KeyError:
+            try:
+                return self.AUTO_RECONNECT
+            except AttributeError:
+                return True

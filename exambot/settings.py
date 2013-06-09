@@ -10,6 +10,7 @@ CONNECTIONS = [
         'enabled': True,
         'admin': None,
         'invite': 'allow',
+        'autoreconnect': True,
     }
 ]
 
