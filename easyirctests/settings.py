@@ -8,6 +8,7 @@ CONNECTIONS = [
         'nick': 'easyirc',
         'autojoins': ['#easyirc'],
         'enabled': True,
+        'autoreconnect': False,
     }
 ]
 
