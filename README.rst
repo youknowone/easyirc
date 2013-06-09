@@ -30,5 +30,6 @@ You can follow example bot step by step:
 - Regex_ for regex-based message hook.
 
 .. _BasicBot: https://github.com/youknowone/easyirc/blob/master/exambot/00basic.py
+.. _Context: https://github.com/youknowone/easyirc/blob/master/exambot/01context.py
 .. _Messages: https://github.com/youknowone/easyirc/blob/master/exambot/10message.py
 .. _Regex: https://github.com/youknowone/easyirc/blob/master/exambot/90regex.py
