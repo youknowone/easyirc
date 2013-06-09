@@ -38,6 +38,6 @@ setup(
     install_requires=[
         'distribute',
         'prettyexc',
-        'cacheobj==0.8.1',
+        'cacheobj==0.8.2',
     ],
 )

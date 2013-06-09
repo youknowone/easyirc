@@ -33,34 +33,34 @@ class EventManager(object):
     def hookglobal(self, job):
         handler = OnepassHandler(job)
         self.handlers.append(handler)
-        return handler
+        return job
 
     def hookcond(self, condition): # condition is callable returns bool
         def decorator(job):
             handler = ConditionalHandler(condition, job)
             self.handlers.append(handler)
-            return handler
+            return job
         return decorator
 
     def hookexc(self, exception):
         def decorator(job):
             handler = ExceptionHandler(exception, job)
             self.handlers.append(handler)
-            return handler
+            return job
         return decorator
 
     def hookmsg(self, *messages):
         def decorator(job):
             handler = MessageHandler(messages, job)
             self.handlers.append(handler)
-            return handler
+            return job
         return decorator
 
     def hookregex(self, regex):
         def decorator(job):
             handler = RegexHandler(regex, job)
             self.handlers.append(handler)
-            return handler
+            return job
         return decorator
 
 
@@ -162,7 +162,7 @@ class RegexHandler(ConditionalHandler):
 
     def job(self, connection, message):
         match = re.search(self.regex, message)
-        return self.job_func(connection, *match.groups())
+        return self.job_func(connection, match.group(0), *match.groups())
 
     def __repr__(self):
         return u'<RegexHandler({},{})>'.format(self.regex, self.job_func)

@@ -2,6 +2,8 @@
 #-*- coding: utf-8 -*-
 
 import threading
+import traceback
+
 from .const import *
 from .socket import BaseSocket
 from . import util
@@ -91,7 +93,10 @@ class BaseConnection(object):
         if key in self.cmdmanager:
             action = self.cmdmanager[key]
             def call(*args):
-                return action(self, *args)
+                try:
+                    action(self, *args)
+                except:
+                    traceback.print_exc()
             return call
         try:
             return self.__getattr__(key)
