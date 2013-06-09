@@ -32,9 +32,13 @@ def on_join(connection, sender, channel):
 
 @manager.hookmsg(ERROR)
 def on_error(connection, *args):
-    connection.disconnect()
     if connection.quitting:
+        connection.disconnect()
         return
+
     if connection.settings.autoreconnect:
         time.sleep(3)
-        connection.connect()
+        connection.reconnect()
+    else:
+        connection.disconnect()
+

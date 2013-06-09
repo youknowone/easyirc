@@ -18,6 +18,16 @@ class NoneSocket(BaseSocket):
         return CREATED
 none_socket = NoneSocket(None)
 
+class ClosedSocket(BaseSocket):
+    def __init__(self, addr, charset='utf-8'):
+        self.connected = False
+
+        BaseSocket.__init__(self, addr, charset)
+
+    def dispatch(self):
+        return DISCONNECTED
+closed_socket = ClosedSocket(None)
+
 class BaseConnection(object):
     """Command IRC connection interface.
     Any connection should support:
@@ -68,6 +78,9 @@ class BaseConnection(object):
 
     def disconnect(self):
         self.socket.disconnect()
+        self.socket = closed_socket
+
+    def reconnect(self):
         self.socket = none_socket
 
     def cmdln(self, command):
