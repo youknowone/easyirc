@@ -102,6 +102,9 @@ class BaseSocket(object):
         while True:
             try:
                 recv = self._recv()
+                # 20140123 lifthrasiir -- shit I'm going to emulate the disconnection behavior here
+                if recv == '': raise socket.error("recv() returned an empty string and easyirc doesn't bother checking it")
+                # 20140123 lifthrasiir -- end
                 self.recvbuffer += recv
                 self._enqueue_buffer()
             except Exception as e:
