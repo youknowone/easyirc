@@ -36,8 +36,8 @@ setup(
         'easyirc': ['version.txt']
     },
     install_requires=[
-        'distribute',
+        'setuptools',
         'prettyexc',
-        'cacheobj==0.8.2',
+        'cacheobj>=0.8.2',
     ],
 )
